@@ -38,7 +38,6 @@ public class UserController {
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
-        checkEmail(user);
         Long id = user.getId();
         if (id == null) {
             log.warn("Должен быть указан ID пользователя");
@@ -50,9 +49,16 @@ public class UserController {
             throw new ValidationException("Пользователь с ID " + id + " не найден");
         }
 
+        checkEmail(user);
         users.replace(id, user);
         log.trace("Обновлен пользователь с ID: {}", id);
         return user;
+    }
+
+    @DeleteMapping
+    public void deleteAllFilms() {
+        log.trace("Удалены все пользователи");
+        users.clear();
     }
 
     // вспомогательный метод для генерации нового идентификатора
@@ -69,7 +75,8 @@ public class UserController {
 
     // проверка email на дубликат
     private void checkEmail(User user) {
-        if (users.values().stream().anyMatch(usr -> usr.getEmail().equals(user.getEmail()))) {
+        if (users.values().stream()
+                .anyMatch(usr -> usr.getEmail().equals(user.getEmail()) & !usr.getId().equals(user.getId()))) {
             log.warn("Email {} уже используется", user.getEmail());
             throw new ValidationException("Email: " + user.getEmail() + " уже используется");
         }

@@ -32,7 +32,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@Valid @RequestBody Film film) {
+    public Film updateFilm(@Valid @RequestBody Film film) {
         Long id = film.getId();
         if (id == null) {
             log.warn("Должен быть указан ID фильма");
@@ -47,6 +47,12 @@ public class FilmController {
         films.replace(id, film);
         log.trace("Обновлен фильм с ID: {}", id);
         return film;
+    }
+
+    @DeleteMapping
+    public void deleteAllFilms() {
+        log.trace("Удалены все фильмы");
+        films.clear();
     }
 
     // вспомогательный метод для генерации нового идентификатора
