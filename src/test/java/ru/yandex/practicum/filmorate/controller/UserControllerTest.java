@@ -21,9 +21,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 public class UserControllerTest {
-    User User1;
-    User User2;
-    User User3;
+    User user1;
+    User user2;
+    User user3;
 
     @Autowired
     private MockMvc mvc;
@@ -32,15 +32,15 @@ public class UserControllerTest {
 
     @BeforeEach
     public void beforeEach() throws Exception {
-        User1 = new User(null, "email1@mail.ru", "login1", "user1", LocalDate.of(1980, 1, 1));
-        mvc.perform(post("/users").content(mapper.writeValueAsString(User1)).contentType(MediaType.APPLICATION_JSON));
-        User2 = new User(null, "email2@mail.ru", "login2", "user2", LocalDate.of(1980, 1, 2));
-        mvc.perform(post("/users").content(mapper.writeValueAsString(User2)).contentType(MediaType.APPLICATION_JSON));
-        User3 = new User(null, "email3@mail.ru", "login3", "user3", LocalDate.of(1980, 1, 3));
-        mvc.perform(post("/users").content(mapper.writeValueAsString(User3)).contentType(MediaType.APPLICATION_JSON));
-        User1.setId(1L);
-        User2.setId(2L);
-        User3.setId(3L);
+        user1 = new User(null, "email1@mail.ru", "login1", "user1", LocalDate.of(1980, 1, 1));
+        mvc.perform(post("/users").content(mapper.writeValueAsString(user1)).contentType(MediaType.APPLICATION_JSON));
+        user2 = new User(null, "email2@mail.ru", "login2", "user2", LocalDate.of(1980, 1, 2));
+        mvc.perform(post("/users").content(mapper.writeValueAsString(user2)).contentType(MediaType.APPLICATION_JSON));
+        user3 = new User(null, "email3@mail.ru", "login3", "user3", LocalDate.of(1980, 1, 3));
+        mvc.perform(post("/users").content(mapper.writeValueAsString(user3)).contentType(MediaType.APPLICATION_JSON));
+        user1.setId(1L);
+        user2.setId(2L);
+        user3.setId(3L);
     }
 
     @AfterEach
@@ -52,7 +52,7 @@ public class UserControllerTest {
     public void findAllShouldBeReturnAllUsers() throws Exception {
         mvc.perform(get("/users"))
                 .andExpect(status().isOk())
-                .andExpect(content().json(mapper.writeValueAsString(Arrays.asList(User1, User2, User3))));
+                .andExpect(content().json(mapper.writeValueAsString(Arrays.asList(user1, user2, user3))));
     }
 
     @Test
