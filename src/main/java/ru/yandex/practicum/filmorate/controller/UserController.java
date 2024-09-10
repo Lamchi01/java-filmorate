@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +33,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@Valid @RequestBody User user) {
+    public User update(@RequestBody User user) {
         if (user.getId() == null) {
             throw new ValidationException("Id пользователя должно быть указано");
         }
@@ -40,16 +41,26 @@ public class UserController {
             throw new ValidationException("Пользователь с таким id не найден");
         }
         User oldUser = users.get(user.getId());
-        if (user.getEmail() != null) {
-            oldUser.setEmail(user.getEmail());
+        if (user.getEmail() != null && !user.getEmail().isBlank()) {
+            if (!checkEmail(user.getEmail())) {
+                throw new ValidationException("Email не соответствет стандарту");
+            } else {
+                oldUser.setEmail(user.getEmail());
+            }
         }
         if (user.getLogin() != null) {
+            if (user.getLogin().isBlank()) {
+                throw new ValidationException("Логин не может быть пустым");
+            }
             oldUser.setLogin(user.getLogin());
         }
         if (user.getBirthday() != null) {
+            if (user.getBirthday().isAfter(LocalDate.now())) {
+                throw new ValidationException("Дата рождения не может быть в будущем");
+            }
             oldUser.setBirthday(user.getBirthday());
         }
-        if (user.getName() != null) {
+        if (user.getName() != null || !user.getName().isBlank()) {
             oldUser.setName(user.getName());
         }
         users.put(oldUser.getId(), oldUser);
@@ -64,5 +75,9 @@ public class UserController {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
+    }
+
+    public static boolean checkEmail(String email) {
+        return email.matches("^[\\w-.]+@[\\w-]+(\\.[\\w-]+)*\\.[a-z]{2,}$");
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +32,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@Valid @RequestBody Film updatedFilm) {
+    public Film update(@RequestBody Film updatedFilm) {
         if (updatedFilm.getId() == null || updatedFilm.getId() <= 0) {
             throw new ValidationException("Id фильма должно быть указано");
         }
@@ -39,16 +40,22 @@ public class FilmController {
             throw new ValidationException("Фильм с указанным id не найден");
         }
         Film oldFilm = films.get(updatedFilm.getId());
-        if (updatedFilm.getName() != null) {
+        if (updatedFilm.getName() != null && !updatedFilm.getName().isBlank()) {
             oldFilm.setName(updatedFilm.getName());
         }
-        if (updatedFilm.getDescription() != null) {
+        if (updatedFilm.getDescription() != null && !updatedFilm.getDescription().isBlank()) {
+            if (updatedFilm.getDescription().length() > 200) {
+                throw new ValidationException("Длина описания не может превышать 200 символов");
+            }
             oldFilm.setDescription(updatedFilm.getDescription());
         }
         if (updatedFilm.getReleaseDate() != null) {
-            oldFilm.setReleaseDate(updatedFilm.getReleaseDate());
+            if (updatedFilm.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+                throw new ValidationException("Фильм не может быть раньше даты рождения фильмов");
+            }
+            oldFilm.setReleaseDate(updatedFilm.getReleaseDate()); // Добавил проверку на дату выпуска
         }
-        if (updatedFilm.getDuration() != null) {
+        if (updatedFilm.getDuration() != 0) {
             oldFilm.setDuration(updatedFilm.getDuration());
         }
         log.info("Film updated: {}", oldFilm);

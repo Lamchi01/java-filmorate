@@ -13,12 +13,12 @@ public class User {
     @NotBlank
     @Email
     private String email;
-    @NotNull
     @NotBlank
     @Pattern(regexp = "^\\S+$")
     private String login;
     private String name;
     @Past
+    @NotNull
     private LocalDate birthday;
 
     public String getName() {
