@@ -2,14 +2,17 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.validator.Marker;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+@Validated
 @Slf4j
 @RestController
 @RequestMapping("/users")
@@ -23,8 +26,9 @@ public class UserController {
         return users.values();
     }
 
+    @Validated(Marker.OnCreate.class)
     @PostMapping
-    public User addUser(@Valid @RequestBody User user) {
+    public User createUser(@Valid @RequestBody User user) {
         checkEmail(user);
         user.setId(getNextId());
         if (user.getName() == null) {
@@ -36,23 +40,30 @@ public class UserController {
         return user;
     }
 
+    @Validated({Marker.OnUpdate.class})
     @PutMapping
-    public User update(@Valid @RequestBody User user) {
+    public User updateFilm(@Valid @RequestBody User user) {
         Long id = user.getId();
         if (id == null) {
             log.warn("Должен быть указан ID пользователя");
             throw new ValidationException("Должен быть указан ID пользователя");
         }
 
-        if (users.get(id) == null) {
+        User savedUser = users.get(id);
+        if (savedUser == null) {
             log.warn("Пользователь с ID: {} не найден", id);
             throw new ValidationException("Пользователь с ID " + id + " не найден");
         }
 
         checkEmail(user);
+
+        if (user.getEmail() != null) savedUser.setEmail(user.getEmail());
+        if (user.getName() != null) savedUser.setName(user.getName());
+        if (user.getLogin() != null) savedUser.setLogin((user.getLogin()));
+        if (user.getBirthday() != null) savedUser.setBirthday((user.getBirthday()));
         users.replace(id, user);
         log.trace("Обновлен пользователь с ID: {}", id);
-        return user;
+        return savedUser;
     }
 
     @DeleteMapping

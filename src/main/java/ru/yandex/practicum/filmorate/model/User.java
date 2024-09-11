@@ -3,30 +3,35 @@ package ru.yandex.practicum.filmorate.model;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.model.validator.Marker;
 
 import java.time.LocalDate;
 
+/**
+ * User
+ */
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder(toBuilder = true)
 @Valid
 @Data
 public class User {
-    Long id = 0L; // id пользоватеоя
+    @Null(groups = Marker.OnCreate.class, message = "id должно быть null")
+    @NotNull(groups = Marker.OnUpdate.class, message = "id - null")
+    private Long id; // id пользоватеоя
 
-    @NotNull(message = "Email - null")
-    @NotBlank(message = "Электронная почта пустая")
+    @NotBlank(groups = Marker.OnCreate.class, message = "Электронная почта пустая")
     @Email(message = "Не правильный формат электронной почты")
-    String email; // электронная почта
+    private String email; // электронная почта
 
+    @NotNull(groups = Marker.OnCreate.class, message = "login - null")
     @Pattern(regexp = "^\\S+$", message = "Логин не может пустым и содержать пробелов")
-    String login; // логин пользовтеля
+    private String login; // логин пользовтеля
 
-    String name; // имя пользователя для отображения
+    private String name; // имя пользователя для отображения
 
+    @NotNull(groups = Marker.OnCreate.class, message = "birthday - null")
     @Past
-    LocalDate birthday; // ДР пользователя
+    private LocalDate birthday; // ДР пользователя
 }

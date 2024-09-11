@@ -1,14 +1,11 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.model.validator.Marker;
 import ru.yandex.practicum.filmorate.model.validator.MinimumDate;
 
 import java.io.Serializable;
@@ -20,21 +17,24 @@ import java.time.LocalDate;
 @Valid
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder(toBuilder = true)
 @Data
 public class Film implements Serializable {
-    Long id; // id фильма
+    @Null(groups = Marker.OnCreate.class, message = "id должно быть null")
+    @NotNull(groups = Marker.OnUpdate.class, message = "id - null")
+    private Long id; // id фильма
 
-    @NotNull(message = "Нет названия")
-    @NotBlank(message = "Название не может быть пустым")
-    String name; // название фильма
+    @NotBlank(groups = Marker.OnCreate.class, message = "Название не может быть пустым")
+    private String name; // название фильма
 
+    @NotNull(groups = Marker.OnCreate.class, message = "description - null")
     @Size(max = 200, message = "Максимальная длина описания - 200 символов")
-    String description; // описание фильма
+    private String description; // описание фильма
 
+    @NotNull(groups = Marker.OnCreate.class, message = "releaseDate - null")
     @MinimumDate(value = "1895-12-28", message = "Дата релиза должна быть на раньше 28.12.1895 года")
-    LocalDate releaseDate; // дата релиза
+    private LocalDate releaseDate; // дата релиза
 
+    @NotNull(groups = Marker.OnCreate.class, message = "duration - null")
     @Min(value = 0, message = "Продолжительность фильма должна быть положительным числом")
-    Long duration; // продолжительность фильма в секундах
+    private Long duration; // продолжительность фильма в секундах
 }
