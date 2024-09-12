@@ -1,12 +1,40 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.model.validator.Marker;
+import ru.yandex.practicum.filmorate.model.validator.MinimumDate;
+
+import java.io.Serializable;
+import java.time.LocalDate;
 
 /**
  * Film.
  */
-@Getter
-@Setter
-public class Film {
+@Valid
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class Film implements Serializable {
+    @Null(groups = Marker.OnCreate.class, message = "id должно быть null")
+    @NotNull(groups = Marker.OnUpdate.class, message = "id - null")
+    private Long id; // id фильма
+
+    @NotBlank(groups = Marker.OnCreate.class, message = "Название не может быть пустым")
+    private String name; // название фильма
+
+    @NotNull(groups = Marker.OnCreate.class, message = "description - null")
+    @Size(max = 200, message = "Максимальная длина описания - 200 символов")
+    private String description; // описание фильма
+
+    @NotNull(groups = Marker.OnCreate.class, message = "releaseDate - null")
+    @MinimumDate(value = "1895-12-28", message = "Дата релиза должна быть на раньше 28.12.1895 года")
+    private LocalDate releaseDate; // дата релиза
+
+    @NotNull(groups = Marker.OnCreate.class, message = "duration - null")
+    @Min(value = 0, message = "Продолжительность фильма должна быть положительным числом")
+    private Long duration; // продолжительность фильма в секундах
 }

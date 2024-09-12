@@ -1,2 +1,3 @@
 # java-filmorate
-Template repository for Filmorate project.
+### Спринт 10. Финальное задание "Filmorate"
+
