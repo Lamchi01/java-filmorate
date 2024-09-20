@@ -32,11 +32,11 @@ public class UserControllerTest {
 
     @BeforeEach
     public void beforeEach() throws Exception {
-        user1 = new User(null, "email1@mail.ru", "login1", "user1", LocalDate.of(1980, 1, 1));
+        user1 = new User(null, "email1@mail.ru", "login1", "user1", LocalDate.of(1980, 1, 1), null);
         mvc.perform(post(url).content(mapper.writeValueAsString(user1)).contentType(MediaType.APPLICATION_JSON));
-        user2 = new User(null, "email2@mail.ru", "login2", "user2", LocalDate.of(1980, 1, 2));
+        user2 = new User(null, "email2@mail.ru", "login2", "user2", LocalDate.of(1980, 1, 2), null);
         mvc.perform(post(url).content(mapper.writeValueAsString(user2)).contentType(MediaType.APPLICATION_JSON));
-        user3 = new User(null, "email3@mail.ru", "login3", "user3", LocalDate.of(1980, 1, 3));
+        user3 = new User(null, "email3@mail.ru", "login3", "user3", LocalDate.of(1980, 1, 3), null);
         mvc.perform(post(url).content(mapper.writeValueAsString(user3)).contentType(MediaType.APPLICATION_JSON));
         user1.setId(1L);
         user2.setId(2L);
@@ -76,7 +76,7 @@ public class UserControllerTest {
         mvc.perform(post(url)
                         .content(mapper.writeValueAsString(newUser))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.email").value("email1@mail.ru"))
                 .andExpect(jsonPath("$.login").value("login1"))
@@ -90,7 +90,7 @@ public class UserControllerTest {
 
     @Test
     public void updateUserShouldBeReturnUser() throws Exception {
-        User userToUpdate = new User(2L, "email2@mail.ru", "login1", "user1", LocalDate.of(1980, 1, 1));
+        User userToUpdate = new User(2L, "email2@mail.ru", "login1", "user1", LocalDate.of(1980, 1, 1), null);
 
         mvc.perform(put(url)
                         .content(mapper.writeValueAsString(userToUpdate))

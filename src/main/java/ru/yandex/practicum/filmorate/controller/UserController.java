@@ -2,95 +2,73 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.validator.Marker;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @Validated
 @Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
+    private final UserService userService;
 
-    private final Map<Long, User> users = new HashMap<>();
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
     public Collection<User> findAll() {
-        log.trace("Выполнен запрос на получение всех пользователей");
-        return users.values();
+        return userService.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public User findById(@PathVariable long id) {
+        return userService.findById(id);
     }
 
     @Validated(Marker.OnCreate.class)
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public User createUser(@Valid @RequestBody User user) {
-        checkEmail(user);
-        user.setId(getNextId());
-        if (user.getName() == null) {
-            user.setName(user.getLogin());
-            log.debug("Пустое имя пользователя с ID: {} заменено логином", user.getId());
-        }
-        users.put(user.getId(), user);
-        log.trace("Добавлен новый пользователь с ID: {}", user.getId());
+        userService.create(user);
         return user;
     }
 
     @Validated({Marker.OnUpdate.class})
     @PutMapping
-    public User updateFilm(@Valid @RequestBody User user) {
-        Long id = user.getId();
-        if (id == null) {
-            log.warn("Должен быть указан ID пользователя");
-            throw new ValidationException("Должен быть указан ID пользователя");
-        }
+    public User updateUser(@Valid @RequestBody User user) {
 
-        User savedUser = users.get(id);
-        if (savedUser == null) {
-            log.warn("Пользователь с ID: {} не найден", id);
-            throw new ValidationException("Пользователь с ID " + id + " не найден");
-        }
-
-        checkEmail(user);
-
-        if (user.getEmail() != null) savedUser.setEmail(user.getEmail());
-        if (user.getName() != null) savedUser.setName(user.getName());
-        if (user.getLogin() != null) savedUser.setLogin((user.getLogin()));
-        if (user.getBirthday() != null) savedUser.setBirthday((user.getBirthday()));
-        users.replace(id, user);
-        log.trace("Обновлен пользователь с ID: {}", id);
-        return savedUser;
+        return userService.update(user);
     }
 
     @DeleteMapping
-    public void deleteAllFilms() {
-        log.trace("Удалены все пользователи");
-        users.clear();
+    public void deleteAllUsers() {
+        userService.deleteAll();
     }
 
-    // вспомогательный метод для генерации нового идентификатора
-    private long getNextId() {
-        long currentMaxId = users.values()
-                .stream()
-                .mapToLong(User::getId)
-                .max()
-                .orElse(0);
-        currentMaxId++;
-        log.debug("Сгенерирован новый ID: {}", currentMaxId);
-        return currentMaxId;
+    @PutMapping("/{id}/friends/{friendId}")
+    public User addFriend(@PathVariable long id, @PathVariable long friendId) {
+        return userService.addFriend(id, friendId);
     }
 
-    // проверка email на дубликат
-    private void checkEmail(User user) {
-        if (users.values().stream()
-                .anyMatch(usr -> usr.getEmail().equals(user.getEmail()) & !usr.getId().equals(user.getId()))) {
-            log.warn("Email {} уже используется", user.getEmail());
-            throw new ValidationException("Email: " + user.getEmail() + " уже используется");
-        }
-        log.debug("Email: {} проверку прошел", user.getEmail());
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public User deleteFriend(@PathVariable long id, @PathVariable long friendId) {
+        return userService.deleteFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public Collection<User> findFriends(@PathVariable long id) {
+        return userService.getFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> findCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+        return userService.getCommonFriends(id, otherId);
     }
 }

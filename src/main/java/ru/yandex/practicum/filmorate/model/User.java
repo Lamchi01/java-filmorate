@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.model.validator.Marker;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * User
@@ -32,6 +34,8 @@ public class User {
     private String name; // имя пользователя для отображения
 
     @NotNull(groups = Marker.OnCreate.class, message = "birthday - null")
-    @Past
+    @Past(message = "Дата рождения должны быть в прошлом")
     private LocalDate birthday; // ДР пользователя
+
+    private Set<Long> friends = new HashSet<>();
 }
