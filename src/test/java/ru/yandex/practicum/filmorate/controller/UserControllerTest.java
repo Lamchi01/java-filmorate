@@ -5,6 +5,7 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -209,7 +210,7 @@ class UserControllerTest {
                 .name("Test User 2.0")
                 .build();
 
-        Exception exception = assertThrows(ValidationException.class, () -> userService.update(newUser));
+        Exception exception = assertThrows(NotFoundException.class, () -> userService.update(newUser));
         assertEquals("Пользователь с таким id не найден", exception.getMessage());
     }
 
