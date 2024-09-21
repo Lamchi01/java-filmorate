@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 @Slf4j
 @Component
@@ -51,51 +50,5 @@ public class InMemoryUserStorage implements UserStorage {
     public void deleteAll() {
         users.clear();
         log.trace("Удалены все пользователи");
-    }
-
-    @Override
-    public User addFriend(long userId, long friendId) {
-        User user = findById(userId);
-        User friend = findById(friendId);
-        if (user == null || friend == null) {
-            return null;
-        }
-
-        user.getFriends().add(friendId);
-        log.trace("Пользователю с ID: {} добавлен друг с ID: {}", userId, friendId);
-        friend.getFriends().add(userId);
-        log.trace("Пользователю с ID: {} добавлен друг с ID: {}", friendId, userId);
-        return user;
-    }
-
-    @Override
-    public User removeFriend(long userId, long friendId) {
-        User user = findById(userId);
-        User friend = findById(friendId);
-        if (user == null || friend == null) {
-            return null;
-        }
-
-        user.getFriends().remove(friendId);
-        log.trace("У пользователя с ID: {} удален друг с ID: {}", userId, friendId);
-        friend.getFriends().remove(userId);
-        log.trace("У пользователя с ID: {} удален друг с ID: {}", friendId, userId);
-        return user;
-    }
-
-    @Override
-    public Collection<User> getFriends(long userId) {
-        User user = findById(userId);
-        Set<Long> friends = user.getFriends();
-        return friends.stream().map(users::get).toList();
-    }
-
-    @Override
-    public Collection<User> getCommonFriends(long userId, long otherId) {
-        User user = findById(userId);
-        Set<Long> userFriends = user.getFriends();
-        User other = findById(otherId);
-        Set<Long> otherFriends = other.getFriends();
-        return userFriends.stream().filter(otherFriends::contains).map(users::get).toList();
     }
 }
