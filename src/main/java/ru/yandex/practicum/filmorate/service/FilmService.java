@@ -1,45 +1,38 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Slf4j
 @Service
 public class FilmService {
-    public final FilmStorage storage;
-
-    @Autowired
-    public FilmService(FilmStorage filmStorage) {
-        this.storage = filmStorage;
-    }
+    private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
 
     public Collection<Film> findAll() {
-        return storage.findAll();
+        return filmStorage.findAll();
     }
 
     public Film findById(Long id) {
-        return storage.findById(id);
+        return filmStorage.findById(id);
     }
 
     public void create(Film film) {
         film.setId(getNextId());
-        storage.create(film);
+        filmStorage.create(film);
     }
 
     public Film update(Film film) {
-        Long id = film.getId();
-        Film savedFilm = storage.findById(id);
-        if (savedFilm == null) {
-            log.warn("Фильм с ID: {} не найден", id);
-            throw new ValidationException("Фильм с ID: " + id + " не найден");
-        }
+        Film savedFilm = filmStorage.findById(film.getId());
 
         if (film.getName() != null) savedFilm.setName(film.getName());
         if (film.getDescription() != null) savedFilm.setDescription(film.getDescription());
@@ -47,29 +40,42 @@ public class FilmService {
         if (film.getDuration() != null) savedFilm.setDuration(film.getDuration());
         if (film.getName() != null) savedFilm.setName(film.getName());
 
-        storage.update(film);
+        filmStorage.update(film);
         return savedFilm;
     }
 
     public void deleteAllFilms() {
-        storage.deleteAll();
+        filmStorage.deleteAll();
     }
 
     public Film likeFilm(long id, long userId) {
-        return storage.addLike(id, userId);
+        Film film = filmStorage.findById(id);
+        userStorage.findById(userId);
+        film.addLike(userId);
+        log.trace("Добавлен лайк к фильму с ID: {} пользователем с ID: {}", id, userId);
+        return film;
     }
 
     public Film deleteLike(long id, long userId) {
-        return storage.deleteLike(id, userId);
+        Film film = filmStorage.findById(id);
+        userStorage.findById(userId);
+        film.deleteLike(userId);
+        log.trace("Удален лайк к фильму с ID: {} пользователя с ID: {}", id, userId);
+        return film;
     }
 
     public List<Film> popularFilms(int count) {
-        return storage.popularFilms(count);
+        log.trace("Получен запрос на получение {} популярных фильмов", count);
+        return filmStorage.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Film::getCountLikes).reversed())
+                .limit(count)
+                .toList();
     }
 
     // вспомогательный метод для генерации нового идентификатора
     private long getNextId() {
-        long currentMaxId = storage.findAll()
+        long currentMaxId = filmStorage.findAll()
                 .stream()
                 .mapToLong(Film::getId)
                 .max()

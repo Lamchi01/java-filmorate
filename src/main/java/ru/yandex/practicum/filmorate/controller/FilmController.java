@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.validator.Marker;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -13,16 +15,13 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import java.util.Collection;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Validated
 @Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
     private final FilmService filmService;
-
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
 
     @GetMapping
     public Collection<Film> findAll() {
@@ -64,10 +63,7 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> popularFilms(@RequestParam(name = "count", defaultValue = "10") Integer count) {
-        if (count == null || count < 1) {
-            throw new ValidationException("Не правильно указано количество фильмов");
-        }
+    public List<Film> popularFilms(@RequestParam(defaultValue = "10") @Positive @NotNull Integer count) {
         return filmService.popularFilms(count);
     }
 }

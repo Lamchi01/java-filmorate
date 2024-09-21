@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -40,6 +41,28 @@ public class Film implements Serializable {
     @Min(value = 0, message = "Продолжительность фильма должна быть положительным числом")
     private Long duration; // продолжительность фильма в секундах
 
+    @JsonIgnore
     private Set<Long> likes = new HashSet<>(); // список id пользователей, которые поставили лайк
+
     private long countLikes; // количество лайков
+
+    // добавление лайка к фильму, инкрементируя счетчик лайков
+    public void addLike(Long userId) {
+        if (likes.contains(userId)) {
+            return;
+        }
+        likes.add(userId);
+        countLikes++;
+    }
+
+    // удаление лайка в фильму, декрементируя счетчкаи лайка
+    public void deleteLike(Long userId) {
+        if (!likes.contains(userId)) {
+            return;
+        }
+        likes.remove(userId);
+        if (countLikes > 0) { // на всякий случай, вдруг так получится, что countLikes == 0
+            countLikes--;
+        }
+    }
 }
