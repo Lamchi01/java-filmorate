@@ -8,6 +8,9 @@ import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -18,11 +21,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class FilmControllerTest {
     private static ValidatorFactory validatorFactory;
     private static Validator validator;
-    private FilmController filmController;
+    private FilmService filmController;
 
     @BeforeEach
     void beforeEach() {
-        filmController = new FilmController();
+        filmController = new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage());
         validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
     }
@@ -51,7 +54,6 @@ class FilmControllerTest {
         Film film = Film.builder().build();
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty());
-        assertEquals(0, filmController.getFilms().size());
     }
 
     @Test
