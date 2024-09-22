@@ -19,11 +19,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserControllerTest {
     private ValidatorFactory validatorFactory;
     private Validator validator;
-    private UserService userService;
+    private UserController userController;
 
     @BeforeEach
     void beforeAll() {
-        userService = new UserService(new InMemoryUserStorage());
+        userController = new UserController(new UserService(new InMemoryUserStorage()));
         validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
     }
@@ -42,8 +42,8 @@ class UserControllerTest {
                 .birthday(LocalDate.of(1990, 1, 1))
                 .build();
 
-        userService.create(user);
-        assertEquals(1, userService.getUsers().size());
+        userController.create(user);
+        assertEquals(1, userController.getUsers().size());
     }
 
     @Test
@@ -51,7 +51,7 @@ class UserControllerTest {
         User user = User.builder().build();
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
-        assertEquals(0, userService.getUsers().size());
+        assertEquals(0, userController.getUsers().size());
     }
 
     @Test
@@ -183,14 +183,14 @@ class UserControllerTest {
                 .birthday(LocalDate.of(1990, 1, 1))
                 .build();
 
-        userService.create(user);
+        userController.create(user);
 
         User newUser = User.builder()
                 .id(null)
                 .name("Test User 2.0")
                 .build();
 
-        Exception exception = assertThrows(ValidationException.class, () -> userService.update(newUser));
+        Exception exception = assertThrows(ValidationException.class, () -> userController.update(newUser));
         assertEquals("Id пользователя должно быть указано", exception.getMessage());
     }
 
@@ -203,14 +203,14 @@ class UserControllerTest {
                 .birthday(LocalDate.of(1990, 1, 1))
                 .build();
 
-        userService.create(user);
+        userController.create(user);
 
         User newUser = User.builder()
                 .id(5)
                 .name("Test User 2.0")
                 .build();
 
-        Exception exception = assertThrows(NotFoundException.class, () -> userService.update(newUser));
+        Exception exception = assertThrows(NotFoundException.class, () -> userController.update(newUser));
         assertEquals("Пользователь с таким id не найден", exception.getMessage());
     }
 
@@ -223,14 +223,14 @@ class UserControllerTest {
                 .birthday(LocalDate.of(1990, 1, 1))
                 .build();
 
-        userService.create(user);
+        userController.create(user);
 
         User newUser = User.builder()
                 .id(1)
                 .email("testexample.com@")
                 .build();
 
-        Exception exception = assertThrows(ValidationException.class, () -> userService.update(newUser));
+        Exception exception = assertThrows(ValidationException.class, () -> userController.update(newUser));
         assertEquals("Email не соответствет стандарту", exception.getMessage());
     }
 
@@ -243,14 +243,14 @@ class UserControllerTest {
                 .birthday(LocalDate.of(1990, 1, 1))
                 .build();
 
-        userService.create(user);
+        userController.create(user);
 
         User newUser = User.builder()
                 .id(1)
                 .login(" ")
                 .build();
 
-        Exception exception = assertThrows(ValidationException.class, () -> userService.update(newUser));
+        Exception exception = assertThrows(ValidationException.class, () -> userController.update(newUser));
         assertEquals("Логин не может быть пустым", exception.getMessage());
     }
 
@@ -263,14 +263,14 @@ class UserControllerTest {
                 .birthday(LocalDate.of(1990, 1, 1))
                 .build();
 
-        userService.create(user);
+        userController.create(user);
 
         User newUser = User.builder()
                 .id(1)
                 .birthday(LocalDate.now().plusYears(1))
                 .build();
 
-        Exception exception = assertThrows(ValidationException.class, () -> userService.update(newUser));
+        Exception exception = assertThrows(ValidationException.class, () -> userController.update(newUser));
         assertEquals("Дата рождения не может быть в будущем", exception.getMessage());
     }
 }

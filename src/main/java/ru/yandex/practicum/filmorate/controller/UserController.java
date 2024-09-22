@@ -17,25 +17,21 @@ import java.util.Collection;
 public class UserController {
     private final UserService userService;
 
-    @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public Collection<User> getUsers() {
         return userService.getUsers();
     }
 
-    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
     public User getUser(@PathVariable int id) {
         return userService.getUserById(id);
     }
 
-    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}/friends")
     public Collection<User> getFriends(@PathVariable int id) {
         return userService.getAllFriends(id);
     }
 
-    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}/friends/common/{otherId}")
     public Collection<User> getCommonFriends(@PathVariable int id,
                                              @PathVariable int otherId) {
@@ -48,13 +44,11 @@ public class UserController {
         return userService.create(user);
     }
 
-    @ResponseStatus(HttpStatus.OK)
     @PutMapping
     public User update(@Valid @RequestBody User user) {
         return userService.update(user);
     }
 
-    @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable int id,
                           @PathVariable int friendId) {

@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -19,16 +18,16 @@ public class FilmService {
     private final UserStorage userStorage;
 
     public void addLike(int filmId, int userId) {
-        User user = userStorage.getUserById(userId); //Для выброса исключения, т.к неизвестный айди пользователя
-                                                     // не может добавить лайк фильму
-        filmStorage.getFilmById(filmId).getLikes().add(user.getId());
+        userStorage.getUserById(userId); //Для выброса исключения, т.к неизвестный айди пользователя
+                                         // не может добавить лайк фильму
+        filmStorage.getFilmById(filmId).getLikes().add(userId);
         log.info("User {} liked film {}", userId, filmId);
     }
 
     public void deleteLike(int filmId, int userId) {
-        User user = userStorage.getUserById(userId); //Для выброса исключения, т.к неизвестный айди пользователя
-                                                     // не может удалить лайк у фильма
-        filmStorage.getFilmById(filmId).getLikes().remove(user.getId());
+        userStorage.getUserById(userId); //Для выброса исключения, т.к неизвестный айди пользователя
+                                         // не может удалить лайк у фильма
+        filmStorage.getFilmById(filmId).getLikes().remove(userId);
         log.info("User {} unliked film {}", userId, filmId);
     }
 

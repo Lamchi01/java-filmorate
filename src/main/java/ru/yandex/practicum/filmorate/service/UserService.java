@@ -16,22 +16,20 @@ public class UserService {
     private final UserStorage userStorage;
 
     public void addFriend(int id, int friendId) {
-        User user = userStorage.getUserById(id);
-        User friend = userStorage.getUserById(friendId);
-
-        user.getFriends().add(friendId);
+        // User
+        userStorage.getUserById(id).getFriends().add(friendId);
         log.info("User {} added friend {}", id, friendId);
-        friend.getFriends().add(id);
+        //Friend
+        userStorage.getUserById(friendId).getFriends().add(id);
         log.info("User {} added friend {}", friendId, id);
     }
 
     public void deleteFriend(int id, int friendId) {
-        User user = userStorage.getUserById(id);
-        User friend = userStorage.getUserById(friendId);
-
-        user.getFriends().remove(friendId);
+        //User
+        userStorage.getUserById(id).getFriends().remove(friendId);
         log.info("User {} deleted friend {}", id, friendId);
-        friend.getFriends().remove(id);
+        //Friend
+        userStorage.getUserById(friendId).getFriends().remove(id);
         log.info("User {} deleted friend {}", friendId, id);
     }
 

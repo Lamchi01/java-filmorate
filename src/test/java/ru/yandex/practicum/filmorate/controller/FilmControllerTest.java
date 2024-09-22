@@ -22,11 +22,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class FilmControllerTest {
     private static ValidatorFactory validatorFactory;
     private static Validator validator;
-    private FilmService filmController;
+    private FilmController filmController;
 
     @BeforeEach
     void beforeEach() {
-        filmController = new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage());
+        filmController = new FilmController(new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage()));
         validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
     }

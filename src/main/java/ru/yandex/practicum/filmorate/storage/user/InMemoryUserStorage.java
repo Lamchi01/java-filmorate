@@ -50,7 +50,7 @@ public class InMemoryUserStorage implements UserStorage {
         }
         User oldUser = users.get(user.getId());
         if (user.getEmail() != null && !user.getEmail().isBlank()) {
-            if (!checkEmail(user.getEmail())) {
+            if (!user.checkEmail()) {
                 throw new ValidationException("Email не соответствет стандарту");
             } else {
                 oldUser.setEmail(user.getEmail());
@@ -96,11 +96,5 @@ public class InMemoryUserStorage implements UserStorage {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
-    }
-
-    public static boolean checkEmail(String email) {
-        return email.matches(
-                "^[\\w-.]+@[\\w-]+(\\.[\\w-]+)*\\.[a-z]{2,}$"
-        );
     }
 }
