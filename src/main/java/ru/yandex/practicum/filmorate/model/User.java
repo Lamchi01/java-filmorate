@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,8 @@ import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.model.validator.Marker;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * User
@@ -32,6 +35,19 @@ public class User {
     private String name; // имя пользователя для отображения
 
     @NotNull(groups = Marker.OnCreate.class, message = "birthday - null")
-    @Past
+    @Past(message = "Дата рождения должны быть в прошлом")
     private LocalDate birthday; // ДР пользователя
+
+    @JsonIgnore
+    private Set<Long> friends = new HashSet<>();
+
+    // добавление друга
+    public void addFriend(Long userId) {
+        friends.add(userId);
+    }
+
+    // удаление друга
+    public void deleteFriend(Long userId) {
+        friends.remove(userId);
+    }
 }

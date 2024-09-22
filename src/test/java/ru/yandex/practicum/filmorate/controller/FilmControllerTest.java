@@ -32,11 +32,11 @@ public class FilmControllerTest {
 
     @BeforeEach
     public void beforeEach() throws Exception {
-        film1 = new Film(null, "Film1", "desc1", LocalDate.of(1991, 1, 1), 110L);
+        film1 = new Film(null, "Film1", "desc1", LocalDate.of(1991, 1, 1), 110L, null, 0);
         mvc.perform(post(url).content(mapper.writeValueAsString(film1)).contentType(MediaType.APPLICATION_JSON));
-        film2 = new Film(null, "Film2", "desc2", LocalDate.of(1992, 1, 1), 110L);
+        film2 = new Film(null, "Film2", "desc2", LocalDate.of(1992, 1, 1), 110L, null, 0);
         mvc.perform(post(url).content(mapper.writeValueAsString(film2)).contentType(MediaType.APPLICATION_JSON));
-        film3 = new Film(null, "Film3", "desc3", LocalDate.of(1993, 1, 1), 110L);
+        film3 = new Film(null, "Film3", "desc3", LocalDate.of(1993, 1, 1), 110L, null, 0);
         mvc.perform(post(url).content(mapper.writeValueAsString(film3)).contentType(MediaType.APPLICATION_JSON));
         film1.setId(1L);
         film2.setId(2L);
@@ -76,7 +76,7 @@ public class FilmControllerTest {
         mvc.perform(post(url)
                         .content(mapper.writeValueAsString(newFilm))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.name").value("Film1"))
                 .andExpect(jsonPath("$.description").value("desc1"))
@@ -91,7 +91,7 @@ public class FilmControllerTest {
 
     @Test
     public void updateFilmShouldBeReturnFilm() throws Exception {
-        Film filmToUpdate = new Film(2L, "Film2 updated", "desc4 updated", LocalDate.of(2000, 1, 1), 30L);
+        Film filmToUpdate = new Film(2L, "Film2 updated", "desc4 updated", LocalDate.of(2000, 1, 1), 30L, null, 0);
 
         mvc.perform(put(url)
                         .content(mapper.writeValueAsString(filmToUpdate))
