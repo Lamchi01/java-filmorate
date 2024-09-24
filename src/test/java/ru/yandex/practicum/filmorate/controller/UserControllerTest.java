@@ -4,12 +4,12 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -17,24 +17,20 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 class UserControllerTest {
-    private static ValidatorFactory validatorFactory;
-    private static Validator validator;
+    private ValidatorFactory validatorFactory;
+    private Validator validator;
     private UserController userController;
 
-    @BeforeAll
-    static void beforeAll() {
+    @BeforeEach
+    void beforeAll() {
+        userController = new UserController(new UserService(new InMemoryUserStorage()));
         validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
     }
 
-    @AfterAll
-    static void afterAll() {
+    @AfterEach
+    void afterAll() {
         validatorFactory.close();
-    }
-
-    @BeforeEach
-    void setUp() {
-        userController = new UserController();
     }
 
     @Test
@@ -214,7 +210,7 @@ class UserControllerTest {
                 .name("Test User 2.0")
                 .build();
 
-        Exception exception = assertThrows(ValidationException.class, () -> userController.update(newUser));
+        Exception exception = assertThrows(NotFoundException.class, () -> userController.update(newUser));
         assertEquals("Пользователь с таким id не найден", exception.getMessage());
     }
 

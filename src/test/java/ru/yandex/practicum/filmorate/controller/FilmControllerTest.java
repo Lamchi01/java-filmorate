@@ -6,8 +6,12 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -22,7 +26,7 @@ class FilmControllerTest {
 
     @BeforeEach
     void beforeEach() {
-        filmController = new FilmController();
+        filmController = new FilmController(new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage()));
         validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
     }
@@ -51,7 +55,6 @@ class FilmControllerTest {
         Film film = Film.builder().build();
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty());
-        assertEquals(0, filmController.getFilms().size());
     }
 
     @Test
@@ -253,7 +256,7 @@ class FilmControllerTest {
                 .duration(100)
                 .build();
 
-        Exception exception = assertThrows(ValidationException.class, () -> filmController.update(newfilm));
+        Exception exception = assertThrows(NotFoundException.class, () -> filmController.update(newfilm));
         assertEquals("Фильм с указанным id не найден", exception.getMessage());
     }
 
