@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.validator.MinimumDate;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -40,6 +41,12 @@ public class Film implements Serializable {
     @NotNull(groups = Marker.OnCreate.class, message = "duration - null")
     @Min(value = 0, message = "Продолжительность фильма должна быть положительным числом")
     private Long duration; // продолжительность фильма в секундах
+
+    @Valid
+    private Mpa mpa; // рейтинг фильма по категории MPA
+
+    @Valid
+    private List<Genre> genres;
 
     @JsonIgnore
     private Set<Long> likes = new HashSet<>(); // список id пользователей, которые поставили лайк

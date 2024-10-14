@@ -32,11 +32,11 @@ public class FilmControllerTest {
 
     @BeforeEach
     public void beforeEach() throws Exception {
-        film1 = new Film(null, "Film1", "desc1", LocalDate.of(1991, 1, 1), 110L, null, 0);
+        film1 = new Film(null, "Film1", "desc1", LocalDate.of(1991, 1, 1), 110L, null, null, null,0);
         mvc.perform(post(url).content(mapper.writeValueAsString(film1)).contentType(MediaType.APPLICATION_JSON));
-        film2 = new Film(null, "Film2", "desc2", LocalDate.of(1992, 1, 1), 110L, null, 0);
+        film2 = new Film(null, "Film2", "desc2", LocalDate.of(1992, 1, 1), 110L, null, null, null,0);
         mvc.perform(post(url).content(mapper.writeValueAsString(film2)).contentType(MediaType.APPLICATION_JSON));
-        film3 = new Film(null, "Film3", "desc3", LocalDate.of(1993, 1, 1), 110L, null, 0);
+        film3 = new Film(null, "Film3", "desc3", LocalDate.of(1993, 1, 1), 110L, null, null, null,0);
         mvc.perform(post(url).content(mapper.writeValueAsString(film3)).contentType(MediaType.APPLICATION_JSON));
         film1.setId(1L);
         film2.setId(2L);
@@ -72,6 +72,7 @@ public class FilmControllerTest {
         newFilm.setDescription("desc1");
         newFilm.setReleaseDate(LocalDate.of(1994, 4, 4));
         newFilm.setDuration(140L);
+        //newFilm.setRatingMpa(0);
 
         mvc.perform(post(url)
                         .content(mapper.writeValueAsString(newFilm))
@@ -91,7 +92,7 @@ public class FilmControllerTest {
 
     @Test
     public void updateFilmShouldBeReturnFilm() throws Exception {
-        Film filmToUpdate = new Film(2L, "Film2 updated", "desc4 updated", LocalDate.of(2000, 1, 1), 30L, null, 0);
+        Film filmToUpdate = new Film(2L, "Film2 updated", "desc4 updated", LocalDate.of(2000, 1, 1), 30L, null, null, null,0);
 
         mvc.perform(put(url)
                         .content(mapper.writeValueAsString(filmToUpdate))
@@ -104,10 +105,14 @@ public class FilmControllerTest {
     public void updateFilmWithOnlyIdShouldBeReturnOldFilm() throws Exception {
         Film filmToUpdate = new Film();
         filmToUpdate.setId(2L);
-        filmToUpdate.setName(null);
+        /*filmToUpdate.setName(null);
         filmToUpdate.setDescription(null);
         filmToUpdate.setReleaseDate(null);
         filmToUpdate.setDuration(null);
+        filmToUpdate.setGenres(null);
+        filmToUpdate.setMpa(null);
+        filmToUpdate.setLikes(null);
+        filmToUpdate.setCountLikes(0);*/
 
         mvc.perform(put(url)
                         .content(mapper.writeValueAsString(filmToUpdate))

@@ -6,6 +6,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
@@ -31,8 +32,14 @@ public class ErrorHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMethodArgumentNotValidException(ConstraintViolationException ex) {
+    public ErrorResponse handleConstraintViolationException(ConstraintViolationException ex) {
         return new ErrorResponse(ex.getConstraintViolations().stream().toList().getFirst().getMessage());
+    }
+
+    @ExceptionHandler(InternalServerException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleInternalServerException(InternalServerException ex) {
+        return new ErrorResponse(ex.getMessage());
     }
 
     @ExceptionHandler

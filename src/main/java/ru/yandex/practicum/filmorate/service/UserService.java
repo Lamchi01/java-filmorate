@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -9,11 +9,15 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.Collection;
 import java.util.Set;
 
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 @Slf4j
 @Service
 public class UserService {
     private final UserStorage userStorage;
+
+    public UserService(@Qualifier("inMemoryUserStorage") UserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
 
     public Collection<User> findAll() {
         return userStorage.findAll();
@@ -53,7 +57,7 @@ public class UserService {
         User friend = userStorage.findById(friendId);
 
         user.addFriend(friendId);
-        friend.addFriend(userId);
+        //friend.addFriend(userId);
         log.trace("Пользователю с ID: {} добавлен друг с ID: {}", userId, friendId);
         log.trace("Пользователю с ID: {} добавлен друг с ID: {}", friendId, userId);
         return user;
@@ -63,9 +67,9 @@ public class UserService {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
         user.deleteFriend(friendId);
-        friend.deleteFriend(userId);
+        //friend.deleteFriend(userId);
         log.trace("У пользователя с ID: {} удален друг с ID: {}", userId, friendId);
-        log.trace("У пользователя с ID: {} удален друг с ID: {}", friendId, userId);
+        //log.trace("У пользователя с ID: {} удален друг с ID: {}", friendId, userId);
         return user;
     }
 
