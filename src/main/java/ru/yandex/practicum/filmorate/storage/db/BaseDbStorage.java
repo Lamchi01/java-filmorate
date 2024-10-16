@@ -1,6 +1,7 @@
-package ru.yandex.practicum.filmorate.storage.dao;
+package ru.yandex.practicum.filmorate.storage.db;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -12,6 +13,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @RequiredArgsConstructor
 public class BaseDbStorage<T> {
     protected final JdbcTemplate jdbc;
@@ -22,6 +24,7 @@ public class BaseDbStorage<T> {
             T result = jdbc.queryForObject(query, mapper, params);
             return Optional.ofNullable(result);
         } catch (EmptyResultDataAccessException ignored) {
+            log.warn("Ошибка получения результата запроса");
             return Optional.empty();
         }
     }
@@ -30,14 +33,20 @@ public class BaseDbStorage<T> {
         return jdbc.query(query, mapper, params);
     }
 
-    protected boolean delete(String query, long id) {
+    protected boolean removeOne(String query, long id) {
         int rowsDeleted = jdbc.update(query, id);
+        return rowsDeleted > 0;
+    }
+
+    protected boolean removeAll(String query) {
+        int rowsDeleted = jdbc.update(query);
         return rowsDeleted > 0;
     }
 
     protected void update(String query, Object... params) {
         int rowsUpdated = jdbc.update(query, params);
         if (rowsUpdated == 0) {
+            log.warn("Ошибка обновления данных");
             throw new InternalServerException("Не удалось обновить данные");
         }
     }
@@ -58,6 +67,7 @@ public class BaseDbStorage<T> {
         if (id != null) {
             return id;
         } else {
+            log.warn("Не удалось добавить данные");
             throw new InternalServerException("Не удалось сохранить данные");
         }
     }
