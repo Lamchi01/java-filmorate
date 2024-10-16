@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.validator.Marker;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
@@ -36,7 +35,8 @@ public class FilmController {
         return filmService.findById(id);
     }
 
-    @Validated({Marker.OnCreate.class})
+    //@Validated({Marker.OnCreate.class})
+    @Validated
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Film createFilm(@Valid @RequestBody Film film) {
@@ -44,7 +44,8 @@ public class FilmController {
         return film;
     }
 
-    @Validated(Marker.OnUpdate.class)
+    //@Validated(Marker.OnUpdate.class)
+    @Validated
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
         return filmService.update(film);

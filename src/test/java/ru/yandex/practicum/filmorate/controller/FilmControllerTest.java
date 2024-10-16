@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,9 +10,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,15 +37,12 @@ public class FilmControllerTest {
 
     @BeforeEach
     public void beforeEach() throws Exception {
-        film1 = new Film(null, "Film1", "desc1", LocalDate.of(1991, 1, 1), 110L, null, null, null,0);
-        mvc.perform(post(url).content(mapper.writeValueAsString(film1)).contentType(MediaType.APPLICATION_JSON));
-        film2 = new Film(null, "Film2", "desc2", LocalDate.of(1992, 1, 1), 110L, null, null, null,0);
-        mvc.perform(post(url).content(mapper.writeValueAsString(film2)).contentType(MediaType.APPLICATION_JSON));
-        film3 = new Film(null, "Film3", "desc3", LocalDate.of(1993, 1, 1), 110L, null, null, null,0);
-        mvc.perform(post(url).content(mapper.writeValueAsString(film3)).contentType(MediaType.APPLICATION_JSON));
-        film1.setId(1L);
-        film2.setId(2L);
-        film3.setId(3L);
+        film1 = new Film(null, "Film1", "desc1", LocalDate.of(1991, 1, 1), 110L, new Mpa(1L, ""), null, null, 0);
+        film1 = postFilm(film1);
+        film2 = new Film(null, "Film2", "desc2", LocalDate.of(1992, 1, 1), 110L, new Mpa(2L, ""), null, null, 0);
+        film2 = postFilm(film2);
+        film3 = new Film(null, "Film3", "desc3", LocalDate.of(1993, 1, 1), 110L, new Mpa(3L, ""), null, null, 0);
+        film3 = postFilm(film3);
     }
 
     @AfterEach
@@ -72,19 +74,19 @@ public class FilmControllerTest {
         newFilm.setDescription("desc1");
         newFilm.setReleaseDate(LocalDate.of(1994, 4, 4));
         newFilm.setDuration(140L);
-        //newFilm.setRatingMpa(0);
+        newFilm.setMpa(new Mpa(1L, ""));
 
-        mvc.perform(post(url)
+        MvcResult res = mvc.perform(post(url)
                         .content(mapper.writeValueAsString(newFilm))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.name").value("Film1"))
                 .andExpect(jsonPath("$.description").value("desc1"))
                 .andExpect(jsonPath("$.releaseDate").value("1994-04-04"))
-                .andExpect(jsonPath("$.duration").value(140L));
+                .andExpect(jsonPath("$.duration").value(140L))
+                .andReturn();
 
-        newFilm.setId(1L);
+        newFilm = updateFilmFromResponse(res);
         mvc.perform(get(url))
                 .andExpect(status().isOk())
                 .andExpect(content().json(mapper.writeValueAsString(List.of(newFilm))));
@@ -92,7 +94,7 @@ public class FilmControllerTest {
 
     @Test
     public void updateFilmShouldBeReturnFilm() throws Exception {
-        Film filmToUpdate = new Film(2L, "Film2 updated", "desc4 updated", LocalDate.of(2000, 1, 1), 30L, null, null, null,0);
+        Film filmToUpdate = new Film(film2.getId(), "Film2 updated", "desc4 updated", LocalDate.of(2000, 1, 1), 30L, film2.getMpa(), new ArrayList<>(), null, 0);
 
         mvc.perform(put(url)
                         .content(mapper.writeValueAsString(filmToUpdate))
@@ -102,39 +104,22 @@ public class FilmControllerTest {
     }
 
     @Test
-    public void updateFilmWithOnlyIdShouldBeReturnOldFilm() throws Exception {
-        Film filmToUpdate = new Film();
-        filmToUpdate.setId(2L);
-        /*filmToUpdate.setName(null);
-        filmToUpdate.setDescription(null);
-        filmToUpdate.setReleaseDate(null);
-        filmToUpdate.setDuration(null);
-        filmToUpdate.setGenres(null);
-        filmToUpdate.setMpa(null);
-        filmToUpdate.setLikes(null);
-        filmToUpdate.setCountLikes(0);*/
-
+    public void updateFilmWithNoChangesShouldBeReturnOldFilm() throws Exception {
         mvc.perform(put(url)
-                        .content(mapper.writeValueAsString(filmToUpdate))
+                        .content(mapper.writeValueAsString(film2))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(mapper.writeValueAsString(film2)));
     }
 
-    @Test
-    public void updateFilmWithOnlyNameShouldBeReturnFilmWithNewName() throws Exception {
-        Film filmToUpdate = new Film();
-        filmToUpdate.setId(2L);
-        filmToUpdate.setName("film2 updated");
-        filmToUpdate.setDescription(null);
-        filmToUpdate.setReleaseDate(null);
-        filmToUpdate.setDuration(null);
+    public Film postFilm(Film film) throws Exception {
+        MvcResult res = mvc.perform(post(url).content(mapper.writeValueAsString(film)).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        String json = res.getResponse().getContentAsString();
+        return mapper.readValue(json, Film.class);
+    }
 
-        film2.setName("film2 updated");
-        mvc.perform(put(url)
-                        .content(mapper.writeValueAsString(filmToUpdate))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().json(mapper.writeValueAsString(film2)));
+    public Film updateFilmFromResponse(MvcResult res) throws UnsupportedEncodingException, JsonProcessingException {
+        String json = res.getResponse().getContentAsString();
+        return mapper.readValue(json, Film.class);
     }
 }

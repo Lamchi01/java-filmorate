@@ -1,25 +1,23 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.BaseStorage;
+import ru.yandex.practicum.filmorate.storage.FriendStorage;
 
-import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 
 //@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
 @Service
 public class UserService {
-    private final UserStorage userStorage;
+    private final BaseStorage<User> userStorage;
+    private final FriendStorage friendStorage;
 
-    public UserService(@Qualifier("inMemoryUserStorage") UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
-
-    public Collection<User> findAll() {
+    public List<User> findAll() {
         return userStorage.findAll();
     }
 
@@ -27,13 +25,12 @@ public class UserService {
         return userStorage.findById(id);
     }
 
-    public void create(User user) {
-        user.setId(getNextId());
+    public User create(User user) {
         if (user.getName() == null) {
             user.setName(user.getLogin());
             log.debug("Пустое имя пользователя с ID: {} заменено логином", user.getId());
         }
-        userStorage.create(user);
+        return userStorage.create(user);
     }
 
     public User update(User user) {
@@ -54,50 +51,23 @@ public class UserService {
 
     public User addFriend(long userId, long friendId) {
         User user = userStorage.findById(userId);
-        User friend = userStorage.findById(friendId);
-
-        user.addFriend(friendId);
-        //friend.addFriend(userId);
-        log.trace("Пользователю с ID: {} добавлен друг с ID: {}", userId, friendId);
-        log.trace("Пользователю с ID: {} добавлен друг с ID: {}", friendId, userId);
+        userStorage.findById(friendId);
+        friendStorage.addFriend(userId, friendId);
         return user;
     }
 
     public User deleteFriend(long userId, long friendId) {
         User user = userStorage.findById(userId);
-        User friend = userStorage.findById(friendId);
-        user.deleteFriend(friendId);
-        //friend.deleteFriend(userId);
-        log.trace("У пользователя с ID: {} удален друг с ID: {}", userId, friendId);
-        //log.trace("У пользователя с ID: {} удален друг с ID: {}", friendId, userId);
+        userStorage.findById(friendId);
+        friendStorage.deleteFriend(userId, friendId);
         return user;
     }
 
-    public Collection<User> getFriends(long userId) {
-        User user = userStorage.findById(userId);
-        Set<Long> friends = user.getFriends();
-        log.trace("Получен запрос на получение друзей пользователя с ID: {}", userId);
-        return friends.stream().map(userStorage::findById).toList();
+    public List<User> getFriends(long userId) {
+        return friendStorage.getFriends(userId);
     }
 
-    public Collection<User> getCommonFriends(long userId, long otherId) {
-        User user = userStorage.findById(userId);
-        User other = userStorage.findById(otherId);
-        Set<Long> userFriends = user.getFriends();
-        Set<Long> otherFriends = other.getFriends();
-        log.trace("Получен запрос на получение общих другей пользователей с ID: {}, {}", userId, otherId);
-        return userFriends.stream().filter(otherFriends::contains).map(userStorage::findById).toList();
-    }
-
-    // вспомогательный метод для генерации нового идентификатора
-    private long getNextId() {
-        long currentMaxId = userStorage.findAll()
-                .stream()
-                .mapToLong(User::getId)
-                .max()
-                .orElse(0);
-        currentMaxId++;
-        log.debug("Сгенерирован новый ID: {}", currentMaxId);
-        return currentMaxId;
+    public List<User> getCommonFriends(long userId, long otherId) {
+        return friendStorage.getCommonFriends(userId, otherId);
     }
 }

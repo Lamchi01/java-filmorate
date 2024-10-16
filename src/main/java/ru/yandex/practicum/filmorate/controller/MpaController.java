@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.validator.Marker;
 import ru.yandex.practicum.filmorate.service.MpaService;
 
 import java.util.List;
@@ -26,11 +25,12 @@ public class MpaController {
     }
 
     @GetMapping("/{id}")
-    public Mpa findById(@PathVariable int id) {
+    public Mpa findById(@PathVariable long id) {
         return mpaService.findById(id);
     }
 
-    @Validated({Marker.OnCreate.class})
+    //@Validated({Marker.OnCreate.class})
+    @Validated
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mpa createMpa(@Valid @RequestBody Mpa mpa) {
@@ -38,7 +38,8 @@ public class MpaController {
         return mpa;
     }
 
-    @Validated(Marker.OnUpdate.class)
+    //@Validated(Marker.OnUpdate.class)
+    @Validated
     @PutMapping
     public Mpa updateMpa(@Valid @RequestBody Mpa mpa) {
         return mpaService.update(mpa);

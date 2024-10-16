@@ -5,17 +5,18 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import ru.yandex.practicum.filmorate.model.validator.Marker;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 
 @Valid
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Mpa {
+public class Mpa implements Serializable {
     @NotNull
-    private Integer id;
+    private Long id;
 
-    //@Valid
-    //@NotNull(groups = Marker.OnCreate.class, message = "name Mpa - null")
     private String name;
 }

@@ -1,30 +1,34 @@
 package ru.yandex.practicum.filmorate.storage.inmemory;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.BaseStorage;
 
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
-@Component("inMemoryUserStorage")
-public class InMemoryUserStorage implements UserStorage {
+@Component
+@ConditionalOnProperty(prefix = "app.storage", name = "in-memory", havingValue = "true")
+public class UserInMemoryStorage implements BaseStorage<User> {
     private final Map<Long, User> users = new HashMap<>();
 
     @Override
-    public Collection<User> findAll() {
+    public List<User> findAll() {
         log.trace("Получен запрос на получение всех пользователей");
-        return users.values();
+        return users.values().stream().toList();
     }
 
     @Override
-    public void create(User user) {
+    public User create(User user) {
+        user.setId(getNextId());
         users.put(user.getId(), user);
         log.trace("Добавлен новый пользователь с ID: {}", user.getId());
+        return user;
     }
 
     @Override
@@ -39,17 +43,28 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void update(User user) {
-        if (findById(user.getId()) == null) {
-            return;
-        }
+    public User update(User user) {
+        findById(user.getId());
         users.replace(user.getId(), user);
         log.trace("Обновлен пользователь с ID: {}", user.getId());
+        return user;
     }
 
     @Override
     public void deleteAll() {
         users.clear();
         log.trace("Удалены все пользователи");
+    }
+
+    // вспомогательный метод для генерации нового идентификатора
+    private long getNextId() {
+        long currentMaxId = users.values()
+                .stream()
+                .mapToLong(User::getId)
+                .max()
+                .orElse(0);
+        currentMaxId++;
+        log.debug("Сгенерирован новый ID: {}", currentMaxId);
+        return currentMaxId;
     }
 }

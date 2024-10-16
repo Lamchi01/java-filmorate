@@ -51,7 +51,7 @@ public class Film implements Serializable {
     @JsonIgnore
     private Set<Long> likes = new HashSet<>(); // список id пользователей, которые поставили лайк
 
-    private long countLikes; // количество лайков
+    private int countLikes; // количество лайков
 
     // добавление лайка к фильму, инкрементируя счетчик лайков
     public void addLike(Long userId) {
