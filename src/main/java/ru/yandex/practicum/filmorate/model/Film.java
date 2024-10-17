@@ -49,12 +49,16 @@ public class Film implements Serializable {
     private List<Genre> genres;
 
     @JsonIgnore
-    private Set<Long> likes = new HashSet<>(); // список id пользователей, которые поставили лайк
+    //private Set<Long> likes = new HashSet<>(); // список id пользователей, которые поставили лайк
+    private Set<Long> likes; // список id пользователей, которые поставили лайк
 
     private int countLikes; // количество лайков
 
     // добавление лайка к фильму, инкрементируя счетчик лайков
     public void addLike(Long userId) {
+        if (likes == null) {
+            likes = new HashSet<>();
+        }
         if (likes.contains(userId)) {
             return;
         }
