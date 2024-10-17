@@ -20,7 +20,7 @@ public class FilmGenreDbStorage implements FilmGenreStorage {
 
     @Override
     public List<Genre> getGenres(long filmId) {
-        log.trace("Получен запрос на получение жарнов фильма с ID {}", filmId);
+        log.trace("Получен запрос на получение жанров фильма с ID {}", filmId);
         return jdbc.query("SELECT * FROM genres WHERE genre_id IN " +
                 "(SELECT genre_id FROM film_genres WHERE film_id = ?)", new GenreRowMapper(), filmId);
     }

@@ -8,6 +8,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
+import java.util.HashSet;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -18,6 +20,9 @@ public class LikeInMemoryStorage implements LikeStorage {
     @Override
     public void likeFilm(long filmId, long userId) {
         Film film = filmStorage.findById(filmId);
+        if (film.getLikes() == null) {
+            film.setLikes(new HashSet<>());
+        }
         film.addLike(userId);
         log.trace("Пользователь с ID {} поставил лайк фильму с ID {}", userId, filmId);
     }

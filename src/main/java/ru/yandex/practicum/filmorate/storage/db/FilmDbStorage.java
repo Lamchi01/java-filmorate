@@ -40,17 +40,17 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     }
 
     @Override
+    public Film findById(Long id) {
+        log.trace("Получен запрос на получение фильма с ID: {}", id);
+        return findOne(FIND_BY_ID_QUERY, id).orElseThrow(() -> new NotFoundException("User with ID " + id + " not found"));
+    }
+
+    @Override
     public Film create(Film film) {
         long id = insert(INSERT_QUERY, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId());
         film.setId(id);
         log.trace("Добавлен новый фильм с ID: {}", film.getId());
         return film;
-    }
-
-    @Override
-    public Film findById(Long id) {
-        log.trace("Получен запрос на получение фильма с ID: {}", id);
-        return findOne(FIND_BY_ID_QUERY, id).orElseThrow(() -> new NotFoundException("User with ID " + id + " not found"));
     }
 
     @Override

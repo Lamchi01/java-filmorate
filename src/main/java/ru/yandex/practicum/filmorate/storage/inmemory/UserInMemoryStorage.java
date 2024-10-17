@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +27,7 @@ public class UserInMemoryStorage implements BaseStorage<User> {
     @Override
     public User create(User user) {
         user.setId(getNextId());
+        user.setFriends(new HashSet<>());
         users.put(user.getId(), user);
         log.trace("Добавлен новый пользователь с ID: {}", user.getId());
         return user;

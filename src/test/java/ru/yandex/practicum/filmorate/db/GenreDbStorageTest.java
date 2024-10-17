@@ -21,46 +21,46 @@ import static org.junit.jupiter.api.Assertions.*;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({GenreDbStorage.class, GenreRowMapper.class})
 public class GenreDbStorageTest {
-    private final GenreDbStorage genreDbStorage;
+    private final GenreDbStorage genreStorage;
 
     @Test
     public void findAll() {
-        assertEquals(6, genreDbStorage.findAll().size());
+        assertEquals(6, genreStorage.findAll().size());
     }
 
     @Test
     public void deleteAll() {
-        genreDbStorage.deleteAll();
-        assertTrue(genreDbStorage.findAll().isEmpty());
+        genreStorage.deleteAll();
+        assertTrue(genreStorage.findAll().isEmpty());
     }
 
     @Test
     public void findById() {
-        Genre genre = genreDbStorage.findById(1L);
+        Genre genre = genreStorage.findById(1L);
         assertEquals(1L, genre.getId());
         assertFalse(genre.getName().isEmpty());
 
         // поиск несуществующего ID
-        assertThrows(NotFoundException.class, () -> genreDbStorage.findById(Long.MAX_VALUE));
+        assertThrows(NotFoundException.class, () -> genreStorage.findById(Long.MAX_VALUE));
     }
 
     @Test
     public void create() {
         Genre genre = new Genre(null, "New genre");
-        long id = genreDbStorage.create(genre).getId();
-        genre = genreDbStorage.findById(id);
-        assertEquals(genre, genreDbStorage.findById(id));
+        long id = genreStorage.create(genre).getId();
+        genre = genreStorage.findById(id);
+        assertEquals(genre, genreStorage.findById(id));
     }
 
     @Test
     public void update() {
-        Genre genre = genreDbStorage.findAll().getFirst();
+        Genre genre = genreStorage.findAll().getFirst();
         genre.setName("Updated");
-        genreDbStorage.update(genre);
-        assertEquals("Updated", genreDbStorage.findById(genre.getId()).getName());
+        genreStorage.update(genre);
+        assertEquals("Updated", genreStorage.findById(genre.getId()).getName());
 
         // обновление не существующего объекта
         genre.setId(Long.MAX_VALUE);
-        assertThrows(InternalServerException.class, () -> genreDbStorage.update(genre));
+        assertThrows(InternalServerException.class, () -> genreStorage.update(genre));
     }
 }

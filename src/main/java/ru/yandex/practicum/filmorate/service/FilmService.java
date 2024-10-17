@@ -52,6 +52,7 @@ public class FilmService {
             throw new WrongRequestException(ex.getMessage());
         }
         List<Genre> genre = film.getGenres();
+
         // сначала удалим все жанры фильмы из таблицы FILM_GENRES
         filmGenreStorage.deleteFilmGenres(film.getId());
         if (genre != null && !genre.isEmpty()) {
@@ -75,7 +76,10 @@ public class FilmService {
         if (film.getReleaseDate() != null) savedFilm.setReleaseDate(film.getReleaseDate());
         if (film.getDuration() != null) savedFilm.setDuration(film.getDuration());
         if (film.getName() != null) savedFilm.setName(film.getName());
-        if (film.getGenres() != null) savedFilm.setGenres(film.getGenres());
+        if (film.getGenres() != null) {
+            filmGenreStorage.deleteFilmGenres(film.getId()); // удалим все жанры фильмы из таблицы FILM_GENRES
+            savedFilm.setGenres(film.getGenres());
+        }
         if (film.getMpa() != null) savedFilm.setMpa(film.getMpa());
         if (film.getLikes() != null) savedFilm.setLikes(film.getLikes());
 

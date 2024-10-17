@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -37,6 +38,9 @@ public class FriendInMemoryStorage implements FriendStorage {
         log.trace("Получен запрос на получение всех друзей пользователя с ID {}", userId);
         User user = userStorage.findById(userId);
         Set<Long> friends = user.getFriends();
+        if (friends == null) {
+            return new ArrayList<>();
+        }
         return friends.stream().map(userStorage::findById).toList();
     }
 
@@ -47,6 +51,9 @@ public class FriendInMemoryStorage implements FriendStorage {
         User other = userStorage.findById(otherId);
         Set<Long> userFriends = user.getFriends();
         Set<Long> otherFriends = other.getFriends();
+        if (userFriends == null || otherFriends == null) {
+            return new ArrayList<>();
+        }
         return userFriends.stream().filter(otherFriends::contains).map(userStorage::findById).toList();
     }
 }

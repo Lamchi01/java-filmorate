@@ -13,6 +13,11 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Базовые операции с БД через JDBC
+ *
+ * @param <T> - Т - класс модели
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class BaseDbStorage<T> {

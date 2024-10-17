@@ -112,13 +112,13 @@ public class FilmControllerTest {
                 .andExpect(content().json(mapper.writeValueAsString(film2)));
     }
 
-    public Film postFilm(Film film) throws Exception {
+    private Film postFilm(Film film) throws Exception {
         MvcResult res = mvc.perform(post(url).content(mapper.writeValueAsString(film)).contentType(MediaType.APPLICATION_JSON)).andReturn();
         String json = res.getResponse().getContentAsString();
         return mapper.readValue(json, Film.class);
     }
 
-    public Film updateFilmFromResponse(MvcResult res) throws UnsupportedEncodingException, JsonProcessingException {
+    private Film updateFilmFromResponse(MvcResult res) throws UnsupportedEncodingException, JsonProcessingException {
         String json = res.getResponse().getContentAsString();
         return mapper.readValue(json, Film.class);
     }

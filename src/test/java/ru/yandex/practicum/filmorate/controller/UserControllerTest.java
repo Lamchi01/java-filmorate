@@ -108,13 +108,13 @@ public class UserControllerTest {
                 .andExpect(content().json(mapper.writeValueAsString(user2)));
     }
 
-    public User postUser(User user) throws Exception {
+    private User postUser(User user) throws Exception {
         MvcResult res = mvc.perform(post(url).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON)).andReturn();
         String json = res.getResponse().getContentAsString();
         return mapper.readValue(json, User.class);
     }
 
-    public long parseId(MvcResult res) throws UnsupportedEncodingException {
+    private long parseId(MvcResult res) throws UnsupportedEncodingException {
         return JsonPath.parse(res.getResponse().getContentAsString()).read("$.id", Long.class);
     }
 }

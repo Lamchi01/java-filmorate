@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.storage.FriendStorage;
 
 import java.util.List;
 
-//@RequiredArgsConstructor
 @Slf4j
 @RequiredArgsConstructor
 @Service
