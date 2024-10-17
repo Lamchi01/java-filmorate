@@ -64,10 +64,13 @@ public class UserService {
     }
 
     public List<User> getFriends(long userId) {
+        userStorage.findById(userId);
         return friendStorage.getFriends(userId);
     }
 
     public List<User> getCommonFriends(long userId, long otherId) {
+        userStorage.findById(userId);
+        userStorage.findById(otherId);
         return friendStorage.getCommonFriends(userId, otherId);
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.validator.Marker;
 import ru.yandex.practicum.filmorate.service.GenreService;
 
 import java.util.List;
@@ -29,8 +30,7 @@ public class GenreController {
         return genreService.findById(id);
     }
 
-    //@Validated({Marker.OnCreate.class})
-    @Validated
+    @Validated({Marker.OnCreate.class})
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Genre createGenre(@Valid @RequestBody Genre genre) {
@@ -38,8 +38,7 @@ public class GenreController {
         return genre;
     }
 
-    //@Validated(Marker.OnUpdate.class)
-    @Validated
+    @Validated(Marker.OnUpdate.class)
     @PutMapping
     public Genre updateGenre(@Valid @RequestBody Genre genre) {
         return genreService.update(genre);
