@@ -5,9 +5,9 @@ import java.util.List;
 public interface BaseStorage<T> {
     List<T> findAll();
 
-    T create(T obj);
-
     T findById(Long id);
+
+    T create(T obj);
 
     T update(T obj);
 

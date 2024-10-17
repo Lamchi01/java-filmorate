@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.WrongRequestException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.db.mappers.UserRowMapper;
@@ -20,6 +21,10 @@ public class FriendDbStorage implements FriendStorage {
 
     @Override
     public void addFriend(long userId, long friendId) {
+        if (userId == friendId) {
+            throw new WrongRequestException("Попытка добавить друга самого себя");
+        }
+
         jdbc.update("INSERT INTO friends (user_id, friend_id) VALUES (?, ?)", userId, friendId);
         log.trace("Пользователю с ID {} добавлен друг с ID {}", userId, friendId);
     }

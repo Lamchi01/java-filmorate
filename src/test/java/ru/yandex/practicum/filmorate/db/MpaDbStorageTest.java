@@ -21,46 +21,46 @@ import static org.junit.jupiter.api.Assertions.*;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({MpaDbStorage.class, MpaRowMapper.class})
 public class MpaDbStorageTest {
-    private final MpaDbStorage mpaDbStorage;
+    private final MpaDbStorage mpaStorage;
 
     @Test
     public void findAll() {
-        assertEquals(5, mpaDbStorage.findAll().size());
+        assertEquals(5, mpaStorage.findAll().size());
     }
 
     @Test
     public void deleteAll() {
-        mpaDbStorage.deleteAll();
-        assertTrue(mpaDbStorage.findAll().isEmpty());
+        mpaStorage.deleteAll();
+        assertTrue(mpaStorage.findAll().isEmpty());
     }
 
     @Test
     public void findById() {
-        Mpa mpa = mpaDbStorage.findById(1L);
+        Mpa mpa = mpaStorage.findById(1L);
         assertEquals(1L, mpa.getId());
         assertFalse(mpa.getName().isEmpty());
 
         // поиск несуществующего ID
-        assertThrows(NotFoundException.class, () -> mpaDbStorage.findById(Long.MAX_VALUE));
+        assertThrows(NotFoundException.class, () -> mpaStorage.findById(Long.MAX_VALUE));
     }
 
     @Test
     public void create() {
         Mpa mpa = new Mpa(null, "New MPA");
-        long id = mpaDbStorage.create(mpa).getId();
-        mpa = mpaDbStorage.findById(id);
-        assertEquals(mpa, mpaDbStorage.findById(id));
+        long id = mpaStorage.create(mpa).getId();
+        mpa = mpaStorage.findById(id);
+        assertEquals(mpa, mpaStorage.findById(id));
     }
 
     @Test
     public void update() {
-        Mpa mpa = mpaDbStorage.findAll().getFirst();
+        Mpa mpa = mpaStorage.findAll().getFirst();
         mpa.setName("Updated");
-        mpaDbStorage.update(mpa);
-        assertEquals("Updated", mpaDbStorage.findById(mpa.getId()).getName());
+        mpaStorage.update(mpa);
+        assertEquals("Updated", mpaStorage.findById(mpa.getId()).getName());
 
         // обновление не существующего объекта
         mpa.setId(Long.MAX_VALUE);
-        assertThrows(InternalServerException.class, () -> mpaDbStorage.update(mpa));
+        assertThrows(InternalServerException.class, () -> mpaStorage.update(mpa));
     }
 }

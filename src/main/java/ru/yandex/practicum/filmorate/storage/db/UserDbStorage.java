@@ -32,14 +32,6 @@ public class UserDbStorage extends BaseDbStorage<User> implements BaseStorage<Us
     }
 
     @Override
-    public User create(User user) {
-        long id = insert(INSERT_QUERY, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
-        user.setId(id);
-        log.trace("Добавлен новый пользователь с ID: {}", user.getId());
-        return user;
-    }
-
-    @Override
     public User findById(Long id) {
         log.trace("Получен запрос на получение пользовтале с IDL {}", id);
         User user = findOne(FIND_BY_ID_QUERY, id).orElseThrow(() -> new NotFoundException("User with ID " + id + " not found"));
@@ -47,6 +39,14 @@ public class UserDbStorage extends BaseDbStorage<User> implements BaseStorage<Us
             log.warn("Пользователь с ID: {} не найден", id);
             throw new NotFoundException("Пользователь с ID " + id + " не найден");
         }
+        return user;
+    }
+
+    @Override
+    public User create(User user) {
+        long id = insert(INSERT_QUERY, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
+        user.setId(id);
+        log.trace("Добавлен новый пользователь с ID: {}", user.getId());
         return user;
     }
 
