@@ -47,14 +47,14 @@ public class GenreDbStorage extends BaseDbStorage<Genre> implements BaseStorage<
 
     @Override
     public Genre update(Genre genre) {
+        update(UPDATE_QUERY, genre.getName(), genre.getId());
         log.trace("Обновлен жанр с ID: {}", genre.getId());
-        update(UPDATE_QUERY, genre.getId(), genre.getName());
         return genre;
     }
 
     @Override
     public void deleteAll() {
-        log.trace("Удалены все жанры");
         removeAll(DELETE_ALL_QUERY);
+        log.trace("Удалены все жанры");
     }
 }
