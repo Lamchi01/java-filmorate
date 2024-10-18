@@ -43,9 +43,10 @@ public class FriendDbStorage implements FriendStorage {
 
     @Override
     public List<User> getCommonFriends(long userId, long otherId) {
+        String sql = "SELECT * FROM users WHERE user_id " +
+                "IN (SELECT friend_id FROM friends WHERE user_id = ?) " +
+                "AND user_id IN (SELECT friend_id FROM friends WHERE user_id = ?)";
         log.trace("Получен запрос на получение общий друзей пользователей с ID {} и ID {}", userId, otherId);
-        List<User> userFriends = getFriends(userId);
-        List<User> otherFriends = getFriends(otherId);
-        return userFriends.stream().filter(otherFriends::contains).toList();
+        return jdbc.query(sql, new UserRowMapper(), userId, otherId);
     }
 }
