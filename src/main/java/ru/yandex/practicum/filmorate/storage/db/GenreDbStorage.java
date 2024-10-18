@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -13,7 +12,6 @@ import java.util.List;
 
 @Slf4j
 @Component
-@ConditionalOnProperty(prefix = "app.storage", name = "in-memory", havingValue = "false")
 public class GenreDbStorage extends BaseDbStorage<Genre> implements BaseStorage<Genre> {
     private static final String FIND_ALL_QUERY = "SELECT * FROM genres";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM genres WHERE genre_id = ?";

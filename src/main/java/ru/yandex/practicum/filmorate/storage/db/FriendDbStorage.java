@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.db;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.WrongRequestException;
@@ -13,7 +12,6 @@ import ru.yandex.practicum.filmorate.storage.db.mappers.UserRowMapper;
 import java.util.List;
 
 @Slf4j
-@ConditionalOnProperty(prefix = "app.storage", name = "in-memory", havingValue = "false")
 @RequiredArgsConstructor
 @Repository
 public class FriendDbStorage implements FriendStorage {
