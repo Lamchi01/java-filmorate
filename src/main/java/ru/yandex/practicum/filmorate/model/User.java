@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.model.validator.Marker;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -38,15 +39,5 @@ public class User {
     private LocalDate birthday; // ДР пользователя
 
     @JsonIgnore
-    private Set<Long> friends;
-
-    // добавление друга
-    public void addFriend(Long userId) {
-        friends.add(userId);
-    }
-
-    // удаление друга
-    public void deleteFriend(Long userId) {
-        friends.remove(userId);
-    }
+    private Set<Long> friends = new HashSet<>();
 }

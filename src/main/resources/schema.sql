@@ -22,6 +22,7 @@ create table if not exists FILMS
     RELEASE_DATE DATE   not null,
     DURATION     BIGINT not null,
     MPA_ID       BIGINT not null,
+    COUNT_LIKES  BIGINT DEFAULT 0,
     constraint FILMS_PK
         primary key (FILM_ID),
     constraint FILMS_MPA_FK

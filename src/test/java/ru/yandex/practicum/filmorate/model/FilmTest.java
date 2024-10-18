@@ -30,7 +30,6 @@ public class FilmTest {
         film.setDescription("Description1");
         film.setReleaseDate(LocalDate.of(2020, 2, 2));
         film.setDuration(1100L);
-        //film.setRatingMpa(0);
     }
 
     @AfterEach

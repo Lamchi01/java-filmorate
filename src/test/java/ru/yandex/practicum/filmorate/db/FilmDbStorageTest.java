@@ -33,11 +33,11 @@ public class FilmDbStorageTest {
 
     @BeforeEach
     public void beforeEach() {
-        film1 = new Film(null, "Film1", "desc1", LocalDate.of(1991, 1, 1), 110L, new Mpa(1L, ""), null, null, 0);
+        film1 = new Film(null, "Film1", "desc1", LocalDate.of(1991, 1, 1), 110L, new Mpa(1L, ""), null, null, 0L);
         film1 = filmStorage.create(film1);
-        film2 = new Film(null, "Film2", "desc2", LocalDate.of(1992, 1, 1), 110L, new Mpa(2L, ""), null, null, 0);
+        film2 = new Film(null, "Film2", "desc2", LocalDate.of(1992, 1, 1), 110L, new Mpa(2L, ""), null, null, 0L);
         film2 = filmStorage.create(film2);
-        film3 = new Film(null, "Film3", "desc3", LocalDate.of(1993, 1, 1), 110L, new Mpa(3L, ""), null, null, 0);
+        film3 = new Film(null, "Film3", "desc3", LocalDate.of(1993, 1, 1), 110L, new Mpa(3L, ""), null, null, 0L);
         film3 = filmStorage.create(film3);
     }
 
@@ -57,7 +57,7 @@ public class FilmDbStorageTest {
 
     @Test
     public void create() {
-        Film film = new Film(null, "Film4", "desc4", LocalDate.of(1994, 1, 1), 110L, new Mpa(3L, ""), null, null, 0);
+        Film film = new Film(null, "Film4", "desc4", LocalDate.of(1994, 1, 1), 110L, new Mpa(3L, ""), null, null, 0L);
         long id = filmStorage.create(film).getId();
         Film newFilm = filmStorage.findById(id);
         assertEquals(film, newFilm);

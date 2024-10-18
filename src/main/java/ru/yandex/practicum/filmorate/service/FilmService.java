@@ -3,19 +3,18 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.exception.WrongRequestException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 import ru.yandex.practicum.filmorate.storage.FilmGenreStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,48 +22,42 @@ import java.util.List;
 public class FilmService {
     private final FilmStorage filmStorage;
     private final BaseStorage<User> userStorage;
-    private final BaseStorage<Mpa> mpaStorage;
-    private final BaseStorage<Genre> genreStorage;
     private final LikeStorage likeStorage;
     private final FilmGenreStorage filmGenreStorage;
 
+    /**
+     * Поиск всех фильмов с маппингом жанров
+     * (используется продуктивная выборка с HashMap)
+     *
+     * @return - список фильмов
+     */
     public List<Film> findAll() {
-        return filmStorage.findAll();
+        List<Film> films = filmStorage.findAll();
+        Map<Long, LinkedHashSet<Genre>> genres = filmGenreStorage.getAllFilmGenres();
+        for (Film film : films) {
+            if (genres.containsKey(film.getId())) {
+                film.setGenres(new LinkedHashSet<>(genres.get(film.getId())));
+            }
+        }
+        return films;
     }
 
     public Film findById(Long id) {
         Film film = filmStorage.findById(id);
-        if (film.getMpa() != null) {
-            Mpa mpa = mpaStorage.findById(film.getMpa().getId());
-            film.setMpa(mpa);
-        }
-        List<Genre> genre = filmGenreStorage.getGenres(id);
-        film.setGenres(genre);
+        film.setGenres(new LinkedHashSet<>(filmGenreStorage.getGenres(id)));
         return film;
     }
 
     public void create(Film film) {
-        try {
-            Mpa mpa = mpaStorage.findById(film.getMpa().getId());
-            film.setMpa(mpa);
-            filmStorage.create(film);
-        } catch (NotFoundException ex) {
-            throw new WrongRequestException(ex.getMessage());
-        }
-        List<Genre> genre = film.getGenres();
+        filmStorage.create(film);
+        Set<Genre> genres = film.getGenres();
 
         // сначала удалим все жанры фильмы из таблицы FILM_GENRES
         filmGenreStorage.deleteFilmGenres(film.getId());
-        if (genre != null && !genre.isEmpty()) {
-            try {
-                film.setGenres(genre.stream()
-                        .map(g -> genreStorage.findById(g.getId()))
-                        .distinct()
-                        .peek(g -> filmGenreStorage.addGenre(film.getId(), g.getId()))
-                        .toList());
-            } catch (NotFoundException ex) {
-                throw new ValidationException("Не верный ID Genre");
-            }
+
+        if (genres != null && !genres.isEmpty()) {
+            filmGenreStorage.addGenres(film.getId(), genres.stream().map(Genre::getId).toList());
+            film.setGenres(new LinkedHashSet<>(filmGenreStorage.getGenres(film.getId())));
         }
     }
 
@@ -78,7 +71,8 @@ public class FilmService {
         if (film.getName() != null) savedFilm.setName(film.getName());
         if (film.getGenres() != null) {
             filmGenreStorage.deleteFilmGenres(film.getId()); // удалим все жанры фильмы из таблицы FILM_GENRES
-            savedFilm.setGenres(film.getGenres());
+            filmGenreStorage.addGenres(film.getId(), film.getGenres().stream().map(Genre::getId).toList());
+            savedFilm.setGenres(new LinkedHashSet<>(filmGenreStorage.getGenres(film.getId())));
         }
         if (film.getMpa() != null) savedFilm.setMpa(film.getMpa());
         if (film.getLikes() != null) savedFilm.setLikes(film.getLikes());
@@ -109,6 +103,10 @@ public class FilmService {
 
     public List<Film> popularFilms(int count) {
         log.trace("Получен запрос на получение {} популярных фильмов", count);
-        return filmStorage.popularFilms(count);
+        List<Film> films = filmStorage.popularFilms(count);
+        for (Film film : films) {
+            film.setGenres(new LinkedHashSet<>(filmGenreStorage.getGenres(film.getId())));
+        }
+        return films;
     }
 }

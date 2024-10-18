@@ -11,7 +11,8 @@ import ru.yandex.practicum.filmorate.model.validator.MinimumDate;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -41,35 +42,13 @@ public class Film implements Serializable {
     @Min(value = 0, message = "Продолжительность фильма должна быть положительным числом")
     private Long duration; // продолжительность фильма в секундах
 
-    @Valid
-    private Mpa mpa; // рейтинг фильма по категории MPA
+    @NotNull
+    private Mpa mpa = new Mpa(); // рейтинг фильма по категории MPA
 
-    @Valid
-    private List<Genre> genres;
-
-    @JsonIgnore
-    private Set<Long> likes; // список id пользователей, которые поставили лайк
+    private Set<Genre> genres = new LinkedHashSet<>();
 
     @JsonIgnore
-    private int countLikes; // количество лайков
+    private Set<Long> likes = new HashSet<>(); // список id пользователей, которые поставили лайк
 
-    // добавление лайка к фильму, инкрементируя счетчик лайков
-    public void addLike(Long userId) {
-        if (likes.contains(userId)) {
-            return;
-        }
-        likes.add(userId);
-        countLikes++;
-    }
-
-    // удаление лайка в фильму, декрементируя счетчкаи лайка
-    public void deleteLike(Long userId) {
-        if (!likes.contains(userId)) {
-            return;
-        }
-        likes.remove(userId);
-        if (countLikes > 0) { // на всякий случай, вдруг так получится, что countLikes == 0
-            countLikes--;
-        }
-    }
+    private Long countLikes = 0L; // количество лайков
 }
