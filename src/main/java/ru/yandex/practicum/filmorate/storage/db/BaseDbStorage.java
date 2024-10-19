@@ -38,11 +38,6 @@ public class BaseDbStorage<T> {
         return jdbc.query(query, mapper, params);
     }
 
-    protected boolean removeOne(String query, long id) {
-        int rowsDeleted = jdbc.update(query, id);
-        return rowsDeleted > 0;
-    }
-
     protected boolean removeAll(String query) {
         int rowsDeleted = jdbc.update(query);
         return rowsDeleted > 0;

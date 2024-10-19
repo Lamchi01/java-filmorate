@@ -1,7 +1,12 @@
 package ru.yandex.practicum.filmorate.storage;
 
-public interface LikeStorage {
-    void likeFilm(long filmId, long userId);
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 
-    void deleteLike(long filmId, long userId);
+public interface LikeStorage {
+    void likeFilm(Film film, User user);
+
+    void deleteLike(Film film, User user);
+
+    long getLikes(Film film);
 }
