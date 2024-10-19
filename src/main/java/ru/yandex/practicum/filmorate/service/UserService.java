@@ -50,26 +50,26 @@ public class UserService {
 
     public User addFriend(long userId, long friendId) {
         User user = userStorage.findById(userId);
-        userStorage.findById(friendId);
-        friendStorage.addFriend(userId, friendId);
+        User friend = userStorage.findById(friendId);
+        friendStorage.addFriend(user, friend);
         return user;
     }
 
     public User deleteFriend(long userId, long friendId) {
         User user = userStorage.findById(userId);
-        userStorage.findById(friendId);
-        friendStorage.deleteFriend(userId, friendId);
+        User friend = userStorage.findById(friendId);
+        friendStorage.deleteFriend(user, friend);
         return user;
     }
 
     public List<User> getFriends(long userId) {
-        userStorage.findById(userId);
-        return friendStorage.getFriends(userId);
+        User user = userStorage.findById(userId);
+        return friendStorage.getFriends(user);
     }
 
     public List<User> getCommonFriends(long userId, long otherId) {
-        userStorage.findById(userId);
-        userStorage.findById(otherId);
-        return friendStorage.getCommonFriends(userId, otherId);
+        User user = userStorage.findById(userId);
+        User other = userStorage.findById(otherId);
+        return friendStorage.getCommonFriends(user, other);
     }
 }
