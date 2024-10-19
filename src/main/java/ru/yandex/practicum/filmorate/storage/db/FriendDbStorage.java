@@ -18,35 +18,35 @@ public class FriendDbStorage implements FriendStorage {
     protected final JdbcTemplate jdbc;
 
     @Override
-    public void addFriend(long userId, long friendId) {
-        if (userId == friendId) {
+    public void addFriend(User user, User friend) {
+        if (user.equals(friend)) {
             throw new WrongRequestException("Попытка добавить друга самого себя");
         }
 
-        jdbc.update("INSERT INTO friends (user_id, friend_id) VALUES (?, ?)", userId, friendId);
-        log.trace("Пользователю с ID {} добавлен друг с ID {}", userId, friendId);
+        jdbc.update("INSERT INTO friends (user_id, friend_id) VALUES (?, ?)", user.getId(), friend.getId());
+        log.trace("Пользователю с ID {} добавлен друг с ID {}", user.getId(), friend.getId());
     }
 
     @Override
-    public void deleteFriend(long userId, long friendId) {
-        jdbc.update("DELETE FROM friends WHERE user_id = ? AND friend_id = ?", userId, friendId);
-        log.trace("У пользователя с ID {} удален друг с ID {}", userId, friendId);
+    public void deleteFriend(User user, User friend) {
+        jdbc.update("DELETE FROM friends WHERE user_id = ? AND friend_id = ?", user.getId(), friend.getId());
+        log.trace("У пользователя с ID {} удален друг с ID {}", user.getId(), friend.getId());
     }
 
     @Override
-    public List<User> getFriends(long userId) {
-        log.trace("Получен запрос на получение всех друзей пользователя с ID {}", userId);
+    public List<User> getFriends(User user) {
+        log.trace("Получен запрос на получение всех друзей пользователя с ID {}", user.getId());
         return jdbc.query("SELECT u.* FROM users u " +
                         "WHERE u.user_id IN (SELECT friend_id FROM friends f WHERE f.user_id = ?)",
-                new UserRowMapper(), userId);
+                new UserRowMapper(), user.getId());
     }
 
     @Override
-    public List<User> getCommonFriends(long userId, long otherId) {
+    public List<User> getCommonFriends(User user, User other) {
         String sql = "SELECT * FROM users WHERE user_id " +
                 "IN (SELECT friend_id FROM friends WHERE user_id = ?) " +
                 "AND user_id IN (SELECT friend_id FROM friends WHERE user_id = ?)";
-        log.trace("Получен запрос на получение общий друзей пользователей с ID {} и ID {}", userId, otherId);
-        return jdbc.query(sql, new UserRowMapper(), userId, otherId);
+        log.trace("Получен запрос на получение общий друзей пользователей с ID {} и ID {}", user.getId(), other.getId());
+        return jdbc.query(sql, new UserRowMapper(), user.getId(), other.getId());
     }
 }

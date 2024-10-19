@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.TestPropertySource;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -16,11 +15,11 @@ import ru.yandex.practicum.filmorate.storage.db.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.db.mappers.FilmRowMapper;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestPropertySource(properties = {"app.storage.in-memory=false"})
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -33,11 +32,11 @@ public class FilmDbStorageTest {
 
     @BeforeEach
     public void beforeEach() {
-        film1 = new Film(null, "Film1", "desc1", LocalDate.of(1991, 1, 1), 110L, new Mpa(1L, ""), null, null, 0L);
+        film1 = new Film(null, "Film1", "desc1", LocalDate.of(1991, 1, 1), 110L, new Mpa(1L, ""), new HashSet<>(), new HashSet<>(), 0L);
         film1 = filmStorage.create(film1);
-        film2 = new Film(null, "Film2", "desc2", LocalDate.of(1992, 1, 1), 110L, new Mpa(2L, ""), null, null, 0L);
+        film2 = new Film(null, "Film2", "desc2", LocalDate.of(1992, 1, 1), 110L, new Mpa(2L, ""), new HashSet<>(), new HashSet<>(), 0L);
         film2 = filmStorage.create(film2);
-        film3 = new Film(null, "Film3", "desc3", LocalDate.of(1993, 1, 1), 110L, new Mpa(3L, ""), null, null, 0L);
+        film3 = new Film(null, "Film3", "desc3", LocalDate.of(1993, 1, 1), 110L, new Mpa(3L, ""), new HashSet<>(), new HashSet<>(), 0L);
         film3 = filmStorage.create(film3);
     }
 
@@ -57,7 +56,7 @@ public class FilmDbStorageTest {
 
     @Test
     public void create() {
-        Film film = new Film(null, "Film4", "desc4", LocalDate.of(1994, 1, 1), 110L, new Mpa(3L, ""), null, null, 0L);
+        Film film = new Film(null, "Film4", "desc4", LocalDate.of(1994, 1, 1), 110L, new Mpa(3L, ""), new HashSet<>(), new HashSet<>(), 0L);
         long id = filmStorage.create(film).getId();
         Film newFilm = filmStorage.findById(id);
         assertEquals(film, newFilm);
