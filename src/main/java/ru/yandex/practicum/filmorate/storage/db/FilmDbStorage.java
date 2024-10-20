@@ -10,10 +10,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.ResultSet;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Repository
@@ -31,8 +28,12 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             "LEFT JOIN likes l ON f.film_id = l.film_id " +
             "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id " +
             "GROUP BY f.film_id ORDER BY COUNT(l.user_id) DESC LIMIT ?";
-    private static final String FIND_ALL_FILM_GENRES = "SELECT fg.*, g.name genre_name FROM film_genres fg " +
+    private static final String FIND_ALL_FILM_GENRES_QUERY = "SELECT fg.*, g.name genre_name FROM film_genres fg " +
             "LEFT JOIN genres g ON fg.genre_id = g.genre_id";
+    private static final String FIND_FILMS_GENRES_QUERY = "SELECT fg.*, g.name genre_name " +
+            "FROM film_genres fg " +
+            "LEFT JOIN genres g ON fg.genre_id = g.genre_id " +
+            "WHERE fg.film_id IN (%s)";
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -81,7 +82,14 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     @Override
     public List<Film> popularFilms(int count) {
         log.trace("Получен запрос на получение TOP {} популярных фильмов", count);
-        return findMany(FIND_POPULAR_QUERY, count);
+        List<Film> films = findMany(FIND_POPULAR_QUERY, count);
+        Map<Long, LinkedHashSet<Genre>> genres = getFilmsGenres(films);
+        for (Film film : films) {
+            if (genres.containsKey(film.getId())) {
+                film.setGenres(new LinkedHashSet<>(genres.get(film.getId())));
+            }
+        }
+        return films;
     }
 
     /**
@@ -91,7 +99,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
      */
     private Map<Long, LinkedHashSet<Genre>> getAllFilmGenres() {
         Map<Long, LinkedHashSet<Genre>> res = new HashMap<>();
-        return jdbc.query(FIND_ALL_FILM_GENRES, (ResultSet rs) -> {
+        return jdbc.query(FIND_ALL_FILM_GENRES_QUERY, (ResultSet rs) -> {
             while (rs.next()) {
                 Long filmId = rs.getLong("film_id");
                 Long genreId = rs.getLong("genre_id");
@@ -100,5 +108,28 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             }
             return res;
         });
+    }
+
+    /**
+     * Метод для выборки жанров фильмов по списку фильмов
+     *
+     * @param films - список фильмов для выборки
+     * @return - HashSet, ключ - ID фильма, значение - список жанров в виде объектов
+     */
+    private Map<Long, LinkedHashSet<Genre>> getFilmsGenres(List<Film> films) {
+        Long[] filmIds = films.stream().map(Film::getId).toArray(Long[]::new);
+        String inSql = String.join(",", Collections.nCopies(filmIds.length, "?"));
+        Map<Long, LinkedHashSet<Genre>> res = new HashMap<>();
+        return jdbc.query(String.format(FIND_FILMS_GENRES_QUERY, inSql),
+                filmIds,
+                (ResultSet rs) -> {
+                    while (rs.next()) {
+                        Long filmId = rs.getLong("film_id");
+                        Long genreId = rs.getLong("genre_id");
+                        String genreName = rs.getString("genre_name");
+                        res.computeIfAbsent(filmId, k -> new LinkedHashSet<>()).add(new Genre(genreId, genreName));
+                    }
+                    return res;
+                });
     }
 }
