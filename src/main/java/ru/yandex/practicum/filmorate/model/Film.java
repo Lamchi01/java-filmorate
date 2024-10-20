@@ -42,10 +42,10 @@ public class Film implements Serializable {
     @Min(value = 0, message = "Продолжительность фильма должна быть положительным числом")
     private Long duration; // продолжительность фильма в секундах
 
-    @NotNull
+    @Valid
     private Mpa mpa = new Mpa(); // рейтинг фильма по категории MPA
 
-    private Set<Genre> genres = new LinkedHashSet<>();
+    private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
 
     @JsonIgnore
     private Set<Long> likes = new HashSet<>(); // список id пользователей, которые поставили лайк

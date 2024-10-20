@@ -44,14 +44,10 @@ public class FilmService {
 
     public void create(Film film) {
         filmStorage.create(film);
-        film.setMpa(mpaStorage.findById(film.getMpa().getId()));
-
-        // сначала удалим все жанры фильмы из таблицы FILM_GENRES
-        filmGenreStorage.deleteFilmGenres(film);
-
         Set<Genre> genres = film.getGenres();
         if (genres != null && !genres.isEmpty()) {
             filmGenreStorage.addGenres(film, genres.stream().toList());
+            // оставить для MockMvc тестов контроллеров, так как жанры могут приходить без имени
             film.setGenres(new LinkedHashSet<>(filmGenreStorage.getGenres(film)));
         }
     }
@@ -69,7 +65,8 @@ public class FilmService {
         if (film.getGenres() != null) {
             filmGenreStorage.deleteFilmGenres(film); // удалим все жанры фильмы из таблицы FILM_GENRES
             filmGenreStorage.addGenres(film, film.getGenres().stream().toList());
-            savedFilm.setGenres(new LinkedHashSet<>(filmGenreStorage.getGenres(film)));
+            // оставить для MockMvc тестов контроллеров, так как жанры могут приходить без имени
+            film.setGenres(new LinkedHashSet<>(filmGenreStorage.getGenres(film)));
         }
         if (film.getMpa() != null) savedFilm.setMpa(film.getMpa());
         if (film.getLikes() != null) savedFilm.setLikes(film.getLikes());
@@ -100,10 +97,6 @@ public class FilmService {
 
     public List<Film> popularFilms(int count) {
         log.trace("Получен запрос на получение {} популярных фильмов", count);
-        List<Film> films = filmStorage.popularFilms(count);
-        for (Film film : films) {
-            film.setGenres(new LinkedHashSet<>(filmGenreStorage.getGenres(film)));
-        }
-        return films;
+        return filmStorage.popularFilms(count);
     }
 }

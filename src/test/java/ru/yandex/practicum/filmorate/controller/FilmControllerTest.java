@@ -38,11 +38,14 @@ public class FilmControllerTest {
 
     @BeforeEach
     public void beforeEach() throws Exception {
-        film1 = new Film(null, "Film1", "desc1", LocalDate.of(1991, 1, 1), 110L, new Mpa(1L, ""), new LinkedHashSet<>(), new HashSet<>(), 0L);
+        film1 = new Film(null, "Film1", "desc1", LocalDate.of(1991, 1, 1), 110L, new Mpa(1L, "G"),
+                new LinkedHashSet<>(), new HashSet<>(), 0L);
         film1 = postFilm(film1);
-        film2 = new Film(null, "Film2", "desc2", LocalDate.of(1992, 1, 1), 110L, new Mpa(2L, ""), new LinkedHashSet<>(), new HashSet<>(), 0L);
+        film2 = new Film(null, "Film2", "desc2", LocalDate.of(1992, 1, 1), 110L, new Mpa(2L, "PG"),
+                new LinkedHashSet<>(), new HashSet<>(), 0L);
         film2 = postFilm(film2);
-        film3 = new Film(null, "Film3", "desc3", LocalDate.of(1993, 1, 1), 110L, new Mpa(3L, ""), new LinkedHashSet<>(), new HashSet<>(), 0L);
+        film3 = new Film(null, "Film3", "desc3", LocalDate.of(1993, 1, 1), 110L, new Mpa(3L, "PG-13"),
+                new LinkedHashSet<>(), new HashSet<>(), 0L);
         film3 = postFilm(film3);
     }
 
@@ -75,7 +78,7 @@ public class FilmControllerTest {
         newFilm.setDescription("desc1");
         newFilm.setReleaseDate(LocalDate.of(1994, 4, 4));
         newFilm.setDuration(140L);
-        newFilm.setMpa(new Mpa(1L, ""));
+        newFilm.setMpa(new Mpa(1L, "G"));
 
         MvcResult res = mvc.perform(post(url)
                         .content(mapper.writeValueAsString(newFilm))
