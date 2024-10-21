@@ -23,18 +23,18 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getUser(@PathVariable int id) {
+    public User getUser(@PathVariable Integer id) {
         return userService.getUserById(id);
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> getFriends(@PathVariable int id) {
-        return userService.getAllFriends(id);
+    public Collection<User> getFriends(@PathVariable Integer id) {
+        return userService.getAllUserFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> getCommonFriends(@PathVariable int id,
-                                             @PathVariable int otherId) {
+    public Collection<User> getCommonFriends(@PathVariable Integer id,
+                                             @PathVariable Integer otherId) {
         return userService.getCommonFriends(id, otherId);
     }
 
@@ -49,22 +49,22 @@ public class UserController {
         return userService.update(user);
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Integer id) {
+        userService.delete(id);
+    }
+
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable int id,
-                          @PathVariable int friendId) {
+    public void addFriend(@PathVariable Integer id,
+                          @PathVariable Integer friendId) {
         userService.addFriend(id, friendId);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable int id) {
-        userService.delete(id);
-    }
-
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}/friends/{friendId}")
-    public void deleteFriend(@PathVariable int id,
-                             @PathVariable int friendId) {
+    public void deleteFriend(@PathVariable Integer id,
+                             @PathVariable Integer friendId) {
         userService.deleteFriend(id, friendId);
     }
 }

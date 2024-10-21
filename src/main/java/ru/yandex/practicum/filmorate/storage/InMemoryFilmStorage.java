@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.film;
+package ru.yandex.practicum.filmorate.storage;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -8,9 +8,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -19,8 +17,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Integer, Film> films = new HashMap<>();
 
     @Override
-    public Collection<Film> getFilms() {
-        return films.values();
+    public List<Film> getFilms() {
+        return new ArrayList<>(films.values());
     }
 
     @Override
@@ -29,6 +27,14 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new NotFoundException("Фильм с указанным id не найден");
         }
         return films.get(id);
+    }
+
+    @Override
+    public Collection<Film> getTopFilms(Integer count) {
+        return getFilms().stream()
+                .sorted((film1, film2) -> film2.getLikes().size() - film1.getLikes().size())
+                .limit(count)
+                .toList();
     }
 
     @Override
@@ -81,6 +87,28 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
         films.remove(id);
         log.info("Film deleted: {}", id);
+    }
+
+    @Override
+    public void addLike(Integer filmId, Integer userId) {
+        Film film = films.get(filmId);
+        if (film == null) {
+            throw new NotFoundException("Фильм с указанным id не найден");
+        }
+        film.getLikes().add(userId);
+        update(film);
+        log.info("User {} liked film {}", userId, filmId);
+    }
+
+    @Override
+    public void deleteLike(Integer filmId, Integer userId) {
+        Film film = films.get(filmId);
+        if (film == null) {
+            throw new NotFoundException("Фильм с указанным id не найден");
+        }
+        film.getLikes().remove(userId);
+        update(film);
+        log.info("User {} unliked film {}", userId, filmId);
     }
 
     private int getNextId() {

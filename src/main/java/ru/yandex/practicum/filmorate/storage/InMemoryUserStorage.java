@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.user;
+package ru.yandex.practicum.filmorate.storage;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -8,9 +8,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -19,8 +17,8 @@ public class InMemoryUserStorage implements UserStorage {
     private final Map<Integer, User> users = new HashMap<>();
 
     @Override
-    public Collection<User> getUsers() {
-        return users.values();
+    public List<User> getUsers() {
+        return new ArrayList<>(users.values());
     }
 
     @Override
@@ -96,5 +94,39 @@ public class InMemoryUserStorage implements UserStorage {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
+    }
+
+    @Override
+    public Collection<User> getCommonFriends(Integer id, Integer friendId) {
+        User user = getUserById(id);
+        User friend = getUserById(friendId);
+
+        return user.getFriends().stream()
+                .filter(userId -> friend.getFriends().contains(userId))
+                .map(this::getUserById)
+                .toList();
+    }
+
+    @Override
+    public Collection<User> getAllUserFriends(Integer id) {
+        User user = getUserById(id);
+        return user.getFriends().stream()
+                .map(this::getUserById)
+                .toList();
+    }
+
+    @Override
+    public void addFriend(Integer id, Integer friendId) {
+        User user = getUserById(id);
+
+        user.getFriends().add(friendId);
+        log.info("User {} added friend {}", id, friendId);
+    }
+
+    public void deleteFriend(Integer id, Integer friendId) {
+        User user = getUserById(id);
+
+        user.getFriends().remove(friendId);
+        log.info("User {} deleted friend {}", id, friendId);
     }
 }

@@ -1,41 +1,37 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class FilmService {
 
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+
+    public FilmService(@Autowired @Qualifier("filmRepository") FilmStorage filmStorage) {
+        this.filmStorage = filmStorage;
+    }
 
     public void addLike(int filmId, int userId) {
-        userStorage.getUserById(userId); //Для выброса исключения, т.к неизвестный айди пользователя
-                                         // не может добавить лайк фильму
-        filmStorage.getFilmById(filmId).getLikes().add(userId);
+        filmStorage.addLike(filmId, userId);
         log.info("User {} liked film {}", userId, filmId);
     }
 
     public void deleteLike(int filmId, int userId) {
-        userStorage.getUserById(userId); //Для выброса исключения, т.к неизвестный айди пользователя
-                                         // не может удалить лайк у фильма
-        filmStorage.getFilmById(filmId).getLikes().remove(userId);
+        filmStorage.deleteLike(filmId, userId);
         log.info("User {} unliked film {}", userId, filmId);
     }
 
-    public Collection<Film> getPopularFilmsByLikes(int count) {
-        return filmStorage.getFilms().stream()
-                .sorted((film1, film2) -> film2.getLikes().size() - film1.getLikes().size())
-                .limit(count)
-                .toList();
+    public Collection<Film> getTopFilms(Integer count) {
+        return filmStorage.getTopFilms(count);
     }
 
     public Collection<Film> getFilms() {
@@ -51,6 +47,9 @@ public class FilmService {
     }
 
     public Film update(Film updatedFilm) {
+        if (filmStorage.getFilmById(updatedFilm.getId()) == null) {
+            throw new NotFoundException("Фильм с id " + updatedFilm.getId() + " не найден");
+        }
         return filmStorage.update(updatedFilm);
     }
 
