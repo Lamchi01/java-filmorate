@@ -54,7 +54,6 @@ public class FilmService {
 
     public Film update(Film film) {
         Film savedFilm = filmStorage.findById(film.getId());
-        filmStorage.create(film);
         film.setMpa(mpaStorage.findById(film.getMpa().getId()));
 
         if (film.getName() != null) savedFilm.setName(film.getName());
