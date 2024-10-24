@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,7 +11,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ErrorHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({MethodArgumentNotValidException.class, ValidationException.class})
+    @ExceptionHandler({MethodArgumentNotValidException.class,
+            ValidationException.class,
+            DataIntegrityViolationException.class})
     public ErrorResponse handleValidationException(final Exception e) {
         return new ErrorResponse(e.getMessage());
     }
@@ -27,5 +30,6 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    public record ErrorResponse(String error) {}
+    public record ErrorResponse(String error) {
+    }
 }

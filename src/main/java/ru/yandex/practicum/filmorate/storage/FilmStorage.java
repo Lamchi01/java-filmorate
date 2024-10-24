@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.film;
+package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -9,6 +9,8 @@ public interface FilmStorage {
     Collection<Film> getFilms();
 
     Film getFilmById(Integer id);
+
+    Collection<Film> getTopFilms(Integer count);
 
     Film create(Film film);
 
