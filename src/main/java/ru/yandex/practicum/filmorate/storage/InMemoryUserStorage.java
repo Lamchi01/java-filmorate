@@ -96,7 +96,6 @@ public class InMemoryUserStorage implements UserStorage {
         return ++currentMaxId;
     }
 
-    @Override
     public Collection<User> getCommonFriends(Integer id, Integer friendId) {
         User user = getUserById(id);
         User friend = getUserById(friendId);
@@ -107,7 +106,6 @@ public class InMemoryUserStorage implements UserStorage {
                 .toList();
     }
 
-    @Override
     public Collection<User> getAllUserFriends(Integer id) {
         User user = getUserById(id);
         return user.getFriends().stream()
@@ -115,7 +113,6 @@ public class InMemoryUserStorage implements UserStorage {
                 .toList();
     }
 
-    @Override
     public void addFriend(Integer id, Integer friendId) {
         User user = getUserById(id);
 

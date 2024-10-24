@@ -4,10 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.GenreRepository;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -20,10 +20,15 @@ public class GenreService {
     }
 
     public Genre getGenreById(Integer id) {
-        Genre genre = genreRepository.getGenreById(id);
-        if (genre == null) {
-            throw new NotFoundException("Жанр не найден");
-        }
-        return genre;
+        return genreRepository.getGenreById(id);
     }
+
+    public void updateGenre(Integer filmId, List<Integer> genresIds) {
+        genreRepository.addGenres(filmId, genresIds);
+    }
+
+    public void deleteGenres(Integer filmId) {
+        genreRepository.deleteGenres(filmId);
+    }
+
 }

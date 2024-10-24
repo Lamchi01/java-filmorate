@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -15,6 +16,11 @@ import java.util.*;
 public class InMemoryFilmStorage implements FilmStorage {
 
     private final Map<Integer, Film> films = new HashMap<>();
+    private final UserService userService;
+
+    public InMemoryFilmStorage(UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     public List<Film> getFilms() {
@@ -89,26 +95,20 @@ public class InMemoryFilmStorage implements FilmStorage {
         log.info("Film deleted: {}", id);
     }
 
-    @Override
-    public void addLike(Integer filmId, Integer userId) {
-        Film film = films.get(filmId);
+    public void addLikeCount(Film film) {
         if (film == null) {
             throw new NotFoundException("Фильм с указанным id не найден");
         }
-        film.getLikes().add(userId);
         update(film);
-        log.info("User {} liked film {}", userId, filmId);
+        log.info("User liked film {}", film.getId());
     }
 
-    @Override
-    public void deleteLike(Integer filmId, Integer userId) {
-        Film film = films.get(filmId);
+    public void deleteLikeCount(Film film) {
         if (film == null) {
             throw new NotFoundException("Фильм с указанным id не найден");
         }
-        film.getLikes().remove(userId);
         update(film);
-        log.info("User {} unliked film {}", userId, filmId);
+        log.info("User unliked film {}", film.getId());
     }
 
     private int getNextId() {

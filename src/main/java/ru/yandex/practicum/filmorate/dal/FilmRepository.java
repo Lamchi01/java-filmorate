@@ -1,74 +1,46 @@
 package ru.yandex.practicum.filmorate.dal;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
-import java.util.Collection;
-import java.util.Comparator;
+import java.sql.ResultSet;
+import java.util.*;
 
 @Repository
 public class FilmRepository extends BaseRepository<Film> implements FilmStorage {
 
-    private static final String QUERY_FOR_ALL_FILMS = "SELECT * FROM FILMS";
-    private static final String QUERY_FOR_FILM_BY_ID = "SELECT * FROM FILMS WHERE FILM_ID = ?";
+    private static final String QUERY_FOR_ALL_FILMS = "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE," +
+            "f.DURATION, f.MPA_ID, m.MPA_NAME AS MPA_NAME " +
+            "FROM FILMS f LEFT JOIN MPA_RATING m ON f.MPA_ID = m.MPA_ID";
+    private static final String QUERY_FOR_FILM_BY_ID = "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, " +
+            "f.DURATION, f.MPA_ID, m.MPA_NAME AS MPA_NAME " +
+            "FROM FILMS f LEFT JOIN MPA_RATING m ON f.MPA_ID = m.MPA_ID " +
+            "WHERE f.FILM_ID = ?";
     private static final String INSERT_QUERY = "INSERT INTO FILMS " +
-            "(NAME, DESCRIPTION, RELEASE_DATE, DURATION, MPA_ID) VALUES (?, ?, ?, ?, ?)";
-    private static final String UPDATE_QUERY = "UPDATE FILMS SET NAME = ?, DESCRIPTION = ?, " +
+            "(FILM_NAME, DESCRIPTION, RELEASE_DATE, DURATION, MPA_ID) VALUES (?, ?, ?, ?, ?)";
+    private static final String UPDATE_QUERY = "UPDATE FILMS SET FILM_NAME = ?, DESCRIPTION = ?, " +
             "RELEASE_DATE = ?, DURATION = ?, MPA_ID = ? WHERE FILM_ID = ?";
     private static final String DELETE_QUERY = "DELETE FROM FILMS WHERE FILM_ID = ?";
+    private static final String QUERY_TOP_FILMS = "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, " +
+            "f.DURATION, f.MPA_ID, m.MPA_NAME AS MPA_NAME FROM FILMS f LEFT JOIN MPA_RATING m ON f.MPA_ID = m.MPA_ID " +
+            "LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES FROM FILM_LIKES GROUP BY FILM_ID) fl " +
+            "ON f.FILM_ID = fl.FILM_ID ORDER BY LIKES DESC LIMIT ?";
+    private static final String QUERY_ALL_GENRES_FILMS = "SELECT fg.*, g.GENRE_NAME FROM FILMS_GENRE AS fg " +
+            "LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.GENRE_ID";
 
-    private final LikesRepository likesRepository;
-    private final GenresRepository genresRepository;
-    private final MpaRepository mpaRepository;
-    private final GenreRepository genreRepository;
-
-
-    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper,
-                          @Autowired LikesRepository likesRepository,
-                          @Autowired GenresRepository genresRepository,
-                          @Autowired MpaRepository mpaRepository,
-                          @Autowired GenreRepository genreRepository) {
+    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
-        this.likesRepository = likesRepository;
-        this.genresRepository = genresRepository;
-        this.mpaRepository = mpaRepository;
-        this.genreRepository = genreRepository;
     }
 
     public Collection<Film> getFilms() {
         Collection<Film> films = findMany(QUERY_FOR_ALL_FILMS);
-        if (!films.isEmpty()) {
-            Collection<Genres> genresList = genresRepository.getAllGenres();
-            Collection<Genre> genres = genreRepository.getAllGenres();
-            Collection<Likes> likes = likesRepository.getAllLikes();
-            Collection<Mpa> mpas = mpaRepository.getAllMpa();
-
-            for (Film film : films) {
-                film.getGenres().addAll(genresList
-                        .stream()
-                        .filter(genre -> genre.getFilmId().equals(film.getId()))
-                        .map(genre1 -> new Genre(genre1.getId(), genres
-                                .stream()
-                                .filter(genre2 -> genre2.getId().equals(genre1.getId()))
-                                .findFirst()
-                                .get()
-                                .getName()))
-                        .toList());
-                film.getLikes().addAll(likes
-                        .stream()
-                        .filter(likes1 -> likes1.getFilmId().equals(film.getId()))
-                        .map(Likes::getUserId)
-                        .toList());
-                film.getMpa().setName(mpas.stream()
-                        .filter(mpa -> mpa.getId().equals(film.getMpa().getId()))
-                        .findFirst()
-                        .orElseThrow(() -> new NotFoundException("Рейтинг с id " + film.getMpa().getId() + " не найден"))
-                        .getName());
+        Map<Integer, Set<Genre>> genres = getAllGenres();
+        for (Film film : films) {
+            if (genres.containsKey(film.getId())) {
+                film.setGenres(genres.get(film.getId()));
             }
         }
         return films;
@@ -77,35 +49,23 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public Film getFilmById(Integer id) {
         Film film = findOne(QUERY_FOR_FILM_BY_ID, id);
-        if (film != null) {
-            Collection<Genre> genres = genreRepository.getAllGenres();
-            film.getGenres().addAll(genreRepository
-                    .getGenresByFilmId(film.getId())
-                    .stream()
-                    .map(genre -> new Genre(genre.getId(), genres
-                            .stream()
-                            .filter(genre1 -> genre1.getId().equals(genre.getId()))
-                            .findFirst()
-                            .get()
-                            .getName()))
-                    .toList());
-            film.getLikes().addAll(likesRepository.getLikesByFilmId(film.getId()));
-            film.getMpa().setName(mpaRepository.getAllMpa()
-                    .stream()
-                    .filter(mpa -> mpa.getId().equals(film.getMpa().getId()))
-                    .findFirst()
-                    .get()
-                    .getName());
+        Map<Integer, Set<Genre>> genres = getAllGenres();
+        if (genres.containsKey(film.getId())) {
+            film.setGenres(genres.get(film.getId()));
         }
         return film;
     }
 
     @Override
     public Collection<Film> getTopFilms(Integer count) {
-        return getFilms().stream()
-                .sorted(Comparator.comparing(f -> f.getLikes().size(), Comparator.reverseOrder()))
-                .limit(count)
-                .toList();
+        Collection<Film> films = findMany(QUERY_TOP_FILMS, count);
+        Map<Integer, Set<Genre>> genres = getAllGenres();
+        for (Film film : films) {
+            if (genres.containsKey(film.getId())) {
+                film.setGenres(genres.get(film.getId()));
+            }
+        }
+        return films;
     }
 
     @Override
@@ -118,13 +78,6 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 film.getDuration(),
                 film.getMpa().getId()
         );
-
-        if (!film.getGenres().isEmpty()) {
-            genresRepository.addGenresToFilm(id, film.getGenres()
-                    .stream()
-                    .map(Genre::getId)
-                    .toList());
-        }
         film.setId(id);
         return film;
     }
@@ -140,13 +93,6 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 film.getMpa().getId(),
                 film.getId()
         );
-        if (!film.getGenres().isEmpty()) {
-            genresRepository.deleteAllGenresFromFilm(film.getId());
-            genresRepository.addGenresToFilm(film.getId(), film.getGenres()
-                    .stream()
-                    .map(Genre::getId)
-                    .toList());
-        }
         return film;
     }
 
@@ -155,11 +101,16 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         delete(DELETE_QUERY, id);
     }
 
-    public void addLike(Integer filmId, Integer userId) {
-        likesRepository.addLike(filmId, userId);
-    }
-
-    public void deleteLike(Integer filmId, Integer userId) {
-        likesRepository.deleteLike(filmId, userId);
+    private Map<Integer, Set<Genre>> getAllGenres() {
+        Map<Integer, Set<Genre>> genres = new HashMap<>();
+        return jdbc.query(QUERY_ALL_GENRES_FILMS, (ResultSet rs) -> {
+            while (rs.next()) {
+                Integer filmId = rs.getInt("FILM_ID");
+                Integer genreId = rs.getInt("GENRE_ID");
+                String genreName = rs.getString("GENRE_NAME");
+                genres.computeIfAbsent(filmId, k -> new HashSet<>()).add(new Genre(genreId, genreName));
+            }
+            return genres;
+        });
     }
 }

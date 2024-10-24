@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.dal;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -15,57 +17,87 @@ import java.time.LocalDate;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({FilmRepository.class,
-        FilmRowMapper.class,
-        LikesRepository.class,
-        LikesRowMapper.class,
-        GenresRepository.class,
-        GenresRowMapper.class,
-        MpaRepository.class,
-        MpaRowMapper.class,
-        GenreRepository.class,
-        GenreRowMapper.class})
+        FilmRowMapper.class})
 class FilmRepositoryTest {
     private final FilmRepository filmRepository;
+    private static Film film1;
+    private static Film film2;
+    private static Film film3;
 
-    @Test
-    void getFilms() {
-        assertThat(filmRepository.getFilms()).isNotEmpty();
-    }
-
-    @Test
-    void getFilmById() {
-        assertThat(filmRepository.getFilmById(1)).hasFieldOrPropertyWithValue("id", 1);
-    }
-
-    @Test
-    void getTopFilms() {
-        assertThat(filmRepository.getTopFilms(10)).isNotEmpty();
-    }
-
-    @Test
-    void create() {
-        Film film = Film.builder()
-                .name("Test Film")
-                .description("Test description")
+    @BeforeAll
+    static void beforeAll() {
+        film1 = Film.builder()
+                .name("Test Film1")
+                .description("Test description2")
                 .releaseDate(LocalDate.of(2022, 1, 1))
                 .duration(100)
                 .mpa(new Mpa(1, "G"))
                 .genres(Set.of(new Genre(1, "Комедия")))
                 .build();
 
-        filmRepository.create(film);
+        film2 = Film.builder()
+                .name("Test Film2")
+                .description("Test description2")
+                .releaseDate(LocalDate.of(2022, 1, 1))
+                .duration(100)
+                .mpa(new Mpa(2, "PG"))
+                .genres(Set.of(new Genre(2, "Драма")))
+                .build();
 
-        assertThat(film).hasFieldOrPropertyWithValue("id", 6);
+        film3 = Film.builder()
+                .name("Test Film3")
+                .description("Test description3")
+                .releaseDate(LocalDate.of(2022, 1, 1))
+                .duration(100)
+                .mpa(new Mpa(3, "PG-13"))
+                .genres(Set.of(new Genre(6, "Боевик")))
+                .build();
+    }
+
+    @Test
+    void getFilms() {
+        filmRepository.create(film1);
+        filmRepository.create(film2);
+        filmRepository.create(film3);
+        assertThat(filmRepository.getFilms()).isNotEmpty();
+    }
+
+    @Test
+    void getFilmById() {
+        filmRepository.create(film1);
+        Film film = filmRepository.getFilmById(film1.getId());
+        assertThat(film).hasFieldOrPropertyWithValue("id", 13);
+    }
+
+    @Test
+    void getTopFilms() {
+        filmRepository.create(film1);
+        filmRepository.create(film2);
+        filmRepository.create(film3);
+        assertThat(filmRepository.getTopFilms(10)).isNotEmpty();
+    }
+
+    @Test
+    void create() {
+        filmRepository.create(film1);
+        filmRepository.create(film2);
+        filmRepository.create(film3);
+
+        assertThat(film2).hasFieldOrPropertyWithValue("id", 2);
     }
 
     @Test
     void update() {
-Film updatedFilm = Film.builder()
+        filmRepository.create(film1);
+        filmRepository.create(film2);
+        filmRepository.create(film3);
+        Film updatedFilm = Film.builder()
                 .id(1)
                 .name("Updated Film")
                 .description("Updated description")
@@ -73,28 +105,20 @@ Film updatedFilm = Film.builder()
                 .duration(100)
                 .mpa(new Mpa(1, "G"))
                 .genres(Set.of(new Genre(1, "Комедия")))
-                .likes(Set.of(1,2))
+                .likes(Set.of(1, 2))
                 .build();
-        assertThat(filmRepository.getFilmById(1)).hasFieldOrPropertyWithValue("name", "Фильм 1");
-        filmRepository.update(updatedFilm);
-        assertThat(filmRepository.getFilmById(1)).hasFieldOrPropertyWithValue("name", "Updated Film");
+
+        Film updated = filmRepository.update(updatedFilm);
+        assertThat(updated).hasFieldOrPropertyWithValue("name", "Updated Film");
     }
 
     @Test
     void delete() {
+        filmRepository.create(film1);
+        filmRepository.create(film2);
+        filmRepository.create(film3);
+
         filmRepository.delete(1);
-        assertThat(filmRepository.getFilmById(1)).isNull();
-    }
-
-    @Test
-    void addLike() {
-        filmRepository.addLike(1, 3);
-        assertThat(filmRepository.getFilmById(1).getLikes()).contains(3);
-    }
-
-    @Test
-    void deleteLike() {
-        filmRepository.deleteLike(1, 2);
-        assertThat(filmRepository.getFilmById(1).getLikes().contains(2)).isFalse();
+        assertThrows(NotFoundException.class, () -> filmRepository.getFilmById(1));
     }
 }

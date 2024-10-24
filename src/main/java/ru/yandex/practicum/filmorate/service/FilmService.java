@@ -4,8 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.LikesRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
@@ -15,19 +17,31 @@ import java.util.Collection;
 public class FilmService {
 
     private final FilmStorage filmStorage;
+    private final GenreService genreService;
+    private final LikesRepository likesRepository;
 
-    public FilmService(@Autowired @Qualifier("filmRepository") FilmStorage filmStorage) {
+    public FilmService(@Autowired @Qualifier("filmRepository") FilmStorage filmStorage,
+                       @Autowired GenreService genreService,
+                       @Autowired LikesRepository likesRepository) {
         this.filmStorage = filmStorage;
+        this.genreService = genreService;
+        this.likesRepository = likesRepository;
     }
 
-    public void addLike(int filmId, int userId) {
-        filmStorage.addLike(filmId, userId);
+    public Film addLike(Integer filmId, Integer userId) {
+        Film film = filmStorage.getFilmById(filmId);
+        film.getLikes().add(userId);
+        likesRepository.addLike(filmId, userId);
         log.info("User {} liked film {}", userId, filmId);
+        return film;
     }
 
-    public void deleteLike(int filmId, int userId) {
-        filmStorage.deleteLike(filmId, userId);
+    public Film deleteLike(Integer filmId, Integer userId) {
+        Film film = filmStorage.getFilmById(filmId);
+        film.getLikes().remove(userId);
+        likesRepository.deleteLike(filmId, userId);
         log.info("User {} unliked film {}", userId, filmId);
+        return film;
     }
 
     public Collection<Film> getTopFilms(Integer count) {
@@ -38,19 +52,34 @@ public class FilmService {
         return filmStorage.getFilms();
     }
 
-    public Film getFilmById(int id) {
+    public Film getFilmById(Integer id) {
         return filmStorage.getFilmById(id);
     }
 
     public Film create(Film film) {
-        return filmStorage.create(film);
+        Film createdFilm = filmStorage.create(film);
+        if (!createdFilm.getGenres().isEmpty()) {
+            genreService.updateGenre(createdFilm.getId(), createdFilm.getGenres()
+                    .stream()
+                    .map(Genre::getId)
+                    .toList());
+        }
+        return createdFilm;
     }
 
-    public Film update(Film updatedFilm) {
-        if (filmStorage.getFilmById(updatedFilm.getId()) == null) {
-            throw new NotFoundException("Фильм с id " + updatedFilm.getId() + " не найден");
+    public Film update(Film film) {
+        if (filmStorage.getFilmById(film.getId()) == null) {
+            throw new NotFoundException("Не передан идентификатор фильма");
         }
-        return filmStorage.update(updatedFilm);
+        Film updatedFilm = filmStorage.update(film);
+        genreService.deleteGenres(updatedFilm.getId());
+        if (!updatedFilm.getGenres().isEmpty()) {
+            genreService.updateGenre(updatedFilm.getId(), updatedFilm.getGenres()
+                    .stream()
+                    .map(Genre::getId)
+                    .toList());
+        }
+        return updatedFilm;
     }
 
     public void delete(int id) {
