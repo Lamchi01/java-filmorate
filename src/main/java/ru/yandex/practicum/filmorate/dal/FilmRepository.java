@@ -12,24 +12,22 @@ import java.util.*;
 @Repository
 public class FilmRepository extends BaseRepository<Film> implements FilmStorage {
 
-    private static final String QUERY_FOR_ALL_FILMS = "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE," +
-            "f.DURATION, f.MPA_ID, m.MPA_NAME AS MPA_NAME " +
-            "FROM FILMS f LEFT JOIN MPA_RATING m ON f.MPA_ID = m.MPA_ID";
-    private static final String QUERY_FOR_FILM_BY_ID = "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, " +
-            "f.DURATION, f.MPA_ID, m.MPA_NAME AS MPA_NAME " +
-            "FROM FILMS f LEFT JOIN MPA_RATING m ON f.MPA_ID = m.MPA_ID " +
-            "WHERE f.FILM_ID = ?";
+    private static final String QUERY_FOR_ALL_FILMS = "SELECT * FROM FILMS f, " +
+            "MPA_RATINGS m WHERE f.MPA_ID = m.MPA_ID";
+    private static final String QUERY_FOR_FILM_BY_ID = "SELECT * FROM FILMS f, MPA_RATINGS m " +
+            "WHERE f.MPA_ID = m.MPA_ID AND f.FILM_ID = ?";
     private static final String INSERT_QUERY = "INSERT INTO FILMS " +
             "(FILM_NAME, DESCRIPTION, RELEASE_DATE, DURATION, MPA_ID) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE FILMS SET FILM_NAME = ?, DESCRIPTION = ?, " +
             "RELEASE_DATE = ?, DURATION = ?, MPA_ID = ? WHERE FILM_ID = ?";
     private static final String DELETE_QUERY = "DELETE FROM FILMS WHERE FILM_ID = ?";
-    private static final String QUERY_TOP_FILMS = "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, " +
-            "f.DURATION, f.MPA_ID, m.MPA_NAME AS MPA_NAME FROM FILMS f LEFT JOIN MPA_RATING m ON f.MPA_ID = m.MPA_ID " +
-            "LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES FROM FILM_LIKES GROUP BY FILM_ID) fl " +
-            "ON f.FILM_ID = fl.FILM_ID ORDER BY LIKES DESC LIMIT ?";
-    private static final String QUERY_ALL_GENRES_FILMS = "SELECT fg.*, g.GENRE_NAME FROM FILMS_GENRE AS fg " +
-            "LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.GENRE_ID";
+    private static final String QUERY_TOP_FILMS = "SELECT * FROM FILMS f, MPA_RATINGS m, " +
+            "(SELECT FILM_ID, COUNT(FILM_ID) AS LIKES FROM FILMS_LIKES GROUP BY FILM_ID) fl WHERE f.MPA_ID = m.MPA_ID " +
+            "AND f.FILM_ID = fl.FILM_ID ORDER BY LIKES DESC LIMIT ?";
+    private static final String QUERY_ALL_GENRES_FILMS = "SELECT * FROM FILMS_GENRES fg, " +
+            "GENRES g WHERE fg.GENRE_ID = g.GENRE_ID";
+    private static final String QUERY_GENRES_BY_FILM = "SELECT * FROM GENRES g, FILMS_GENRES fg " +
+            "WHERE g.GENRE_ID = fg.GENRE_ID AND fg.FILM_ID = ?";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -49,10 +47,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public Film getFilmById(Integer id) {
         Film film = findOne(QUERY_FOR_FILM_BY_ID, id);
-        Map<Integer, Set<Genre>> genres = getAllGenres();
-        if (genres.containsKey(film.getId())) {
-            film.setGenres(genres.get(film.getId()));
-        }
+        film.setGenres(getGenresByFilm(id));
         return film;
     }
 
@@ -112,5 +107,17 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             }
             return genres;
         });
+    }
+
+    private Set<Genre> getGenresByFilm(Integer filmId) {
+        return jdbc.query(QUERY_GENRES_BY_FILM, (ResultSet rs) -> {
+            Set<Genre> genres = new HashSet<>();
+            while (rs.next()) {
+                Integer genreId = rs.getInt("GENRE_ID");
+                String genreName = rs.getString("GENRE_NAME");
+                genres.add(new Genre(genreId, genreName));
+            }
+            return genres;
+        }, filmId);
     }
 }

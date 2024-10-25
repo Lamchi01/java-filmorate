@@ -17,11 +17,11 @@ public class BaseRepository<T> {
     protected final RowMapper<T> mapper;
 
     protected T findOne(String query, Object... params) {
-        try {
-            return jdbc.queryForObject(query, mapper, params);
-        } catch (Exception e) {
+        List<T> result = jdbc.query(query, mapper, params);
+        if (result.isEmpty()) {
             throw new NotFoundException("Не удалось найти данные");
         }
+        return result.getFirst();
     }
 
     protected List<T> findMany(String query, Object... params) {

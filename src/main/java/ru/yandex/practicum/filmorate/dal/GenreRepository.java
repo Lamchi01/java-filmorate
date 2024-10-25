@@ -12,10 +12,10 @@ import java.util.*;
 
 @Repository
 public class GenreRepository extends BaseRepository<Genre> {
-    private static final String QUERY_FOR_ALL_GENRES = "SELECT * FROM GENRE";
-    private static final String INSERT_QUERY = "INSERT INTO FILMS_GENRE (FILM_ID, GENRE_ID) VALUES (?, ?)";
-    private static final String QUERY_FOR_GENRE_BY_ID = "SELECT * FROM GENRE WHERE GENRE_ID = ?";
-    private static final String DELETE_ALL_FROM_FILM_QUERY = "DELETE FROM FILMS_GENRE WHERE FILM_ID = ?";
+    private static final String QUERY_FOR_ALL_GENRES = "SELECT * FROM GENRES";
+    private static final String INSERT_QUERY = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
+    private static final String QUERY_FOR_GENRE_BY_ID = "SELECT * FROM GENRES WHERE GENRE_ID = ?";
+    private static final String DELETE_ALL_FROM_FILM_QUERY = "DELETE FROM FILMS_GENRES WHERE FILM_ID = ?";
 
     public GenreRepository(JdbcTemplate jdbc, RowMapper<Genre> mapper) {
         super(jdbc, mapper);

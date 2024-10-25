@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.GenreRepository;
 import ru.yandex.practicum.filmorate.dal.LikesRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -15,16 +16,15 @@ import java.util.Collection;
 @Slf4j
 @Service
 public class FilmService {
-
     private final FilmStorage filmStorage;
-    private final GenreService genreService;
+    private final GenreRepository genreRepository;
     private final LikesRepository likesRepository;
 
     public FilmService(@Autowired @Qualifier("filmRepository") FilmStorage filmStorage,
-                       @Autowired GenreService genreService,
+                       @Autowired GenreRepository genreRepository,
                        @Autowired LikesRepository likesRepository) {
         this.filmStorage = filmStorage;
-        this.genreService = genreService;
+        this.genreRepository = genreRepository;
         this.likesRepository = likesRepository;
     }
 
@@ -59,7 +59,7 @@ public class FilmService {
     public Film create(Film film) {
         Film createdFilm = filmStorage.create(film);
         if (!createdFilm.getGenres().isEmpty()) {
-            genreService.updateGenre(createdFilm.getId(), createdFilm.getGenres()
+            genreRepository.addGenres(createdFilm.getId(), createdFilm.getGenres()
                     .stream()
                     .map(Genre::getId)
                     .toList());
@@ -72,9 +72,9 @@ public class FilmService {
             throw new NotFoundException("Не передан идентификатор фильма");
         }
         Film updatedFilm = filmStorage.update(film);
-        genreService.deleteGenres(updatedFilm.getId());
         if (!updatedFilm.getGenres().isEmpty()) {
-            genreService.updateGenre(updatedFilm.getId(), updatedFilm.getGenres()
+            genreRepository.deleteGenres(updatedFilm.getId());
+            genreRepository.addGenres(updatedFilm.getId(), updatedFilm.getGenres()
                     .stream()
                     .map(Genre::getId)
                     .toList());
