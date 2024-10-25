@@ -21,9 +21,9 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     private static final String UPDATE_QUERY = "UPDATE FILMS SET FILM_NAME = ?, DESCRIPTION = ?, " +
             "RELEASE_DATE = ?, DURATION = ?, MPA_ID = ? WHERE FILM_ID = ?";
     private static final String DELETE_QUERY = "DELETE FROM FILMS WHERE FILM_ID = ?";
-    private static final String QUERY_TOP_FILMS = "SELECT * FROM FILMS f, MPA_RATINGS m, " +
-            "(SELECT FILM_ID, COUNT(FILM_ID) AS LIKES FROM FILMS_LIKES GROUP BY FILM_ID) fl WHERE f.MPA_ID = m.MPA_ID " +
-            "AND f.FILM_ID = fl.FILM_ID ORDER BY LIKES DESC LIMIT ?";
+    private static final String QUERY_TOP_FILMS = "SELECT * FROM FILMS f LEFT JOIN MPA_RATINGS m " +
+            "ON f.MPA_ID = m.MPA_ID LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES FROM FILMS_LIKES " +
+            "GROUP BY FILM_ID) fl ON f.FILM_ID = fl.FILM_ID ORDER BY LIKES DESC LIMIT ?";
     private static final String QUERY_ALL_GENRES_FILMS = "SELECT * FROM FILMS_GENRES fg, " +
             "GENRES g WHERE fg.GENRE_ID = g.GENRE_ID";
     private static final String QUERY_GENRES_BY_FILM = "SELECT * FROM GENRES g, FILMS_GENRES fg " +
