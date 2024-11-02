@@ -40,14 +40,4 @@ public class User {
 
     @JsonIgnore
     private Set<Long> friends = new HashSet<>();
-
-    // добавление друга
-    public void addFriend(Long userId) {
-        friends.add(userId);
-    }
-
-    // удаление друга
-    public void deleteFriend(Long userId) {
-        friends.remove(userId);
-    }
 }

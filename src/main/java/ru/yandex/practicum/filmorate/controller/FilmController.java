@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -15,13 +14,16 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import java.util.Collection;
 import java.util.List;
 
-@RequiredArgsConstructor
 @Validated
 @Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
     private final FilmService filmService;
+
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
 
     @GetMapping
     public Collection<Film> findAll() {

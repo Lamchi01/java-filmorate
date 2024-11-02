@@ -36,14 +36,12 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User createUser(@Valid @RequestBody User user) {
-        userService.create(user);
-        return user;
+        return userService.create(user);
     }
 
     @Validated({Marker.OnUpdate.class})
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
-
         return userService.update(user);
     }
 
