@@ -7,13 +7,11 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.model.validator.Marker;
 
 import java.time.LocalDate;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UserTest {
 
@@ -40,42 +38,27 @@ public class UserTest {
 
     @Test
     public void validUserOnCreate() {
-        violations = validator.validate(user, Marker.OnCreate.class);
+        violations = validator.validate(user);
         assertTrue(violations.isEmpty());
     }
 
     @Test
     public void validUserOnUpdate() {
         user.setId(1L);
-        violations = validator.validate(user, Marker.OnUpdate.class);
+        violations = validator.validate(user);
         assertTrue(violations.isEmpty());
     }
 
     @Test
     public void nullIdOnCreate() {
-        violations = validator.validate(user, Marker.OnCreate.class);
+        violations = validator.validate(user);
         assertTrue(violations.isEmpty());
-    }
-
-    @Test
-    public void nullIdOnUpdate() {
-        violations = validator.validate(user, Marker.OnUpdate.class);
-        assertEquals(1, violations.size());
-        assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("id")));
-    }
-
-    @Test
-    public void notNullIdOnCreate() {
-        user.setId(1L);
-        violations = validator.validate(user, Marker.OnCreate.class);
-        assertEquals(1, violations.size());
-        assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("id")));
     }
 
     @Test
     public void notNullIdOnUpdate() {
         user.setId(1L);
-        violations = validator.validate(user, Marker.OnUpdate.class);
+        violations = validator.validate(user);
         assertTrue(violations.isEmpty());
     }
 
@@ -97,7 +80,7 @@ public class UserTest {
     @Test
     public void blankEmailOnCreate() {
         user.setEmail("");
-        violations = validator.validate(user, Marker.OnCreate.class);
+        violations = validator.validate(user);
         assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("email")));
     }
 
@@ -105,13 +88,13 @@ public class UserTest {
     public void blankEmailOnUpdate() {
         user.setEmail("");
         violations = validator.validate(user);
-        assertTrue(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("email")));
     }
 
     @Test
     public void nullEmailOnCreate() {
         user.setEmail(null);
-        violations = validator.validate(user, Marker.OnCreate.class);
+        violations = validator.validate(user);
         assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("email")));
     }
 
@@ -119,7 +102,7 @@ public class UserTest {
     public void nullEmailOnUpdate() {
         user.setEmail(null);
         violations = validator.validate(user);
-        assertTrue(violations.isEmpty());
+        assertFalse(violations.isEmpty());
     }
 
     @Test
@@ -143,7 +126,7 @@ public class UserTest {
     @Test
     public void nullLoginOnCreate() {
         user.setLogin(null);
-        violations = validator.validate(user, Marker.OnCreate.class);
+        violations = validator.validate(user);
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("login")));
     }
@@ -152,7 +135,8 @@ public class UserTest {
     public void nullLoginOnUpdate() {
         user.setLogin(null);
         violations = validator.validate(user);
-        assertTrue(violations.isEmpty());
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("login")));
     }
 
     @Test
@@ -166,7 +150,7 @@ public class UserTest {
     @Test
     public void nullBirthdayOnCreate() {
         user.setBirthday(null);
-        violations = validator.validate(user, Marker.OnCreate.class);
+        violations = validator.validate(user);
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("birthday")));
     }
@@ -175,7 +159,8 @@ public class UserTest {
     public void nullBirthdayOnUpdate() {
         user.setBirthday(null);
         violations = validator.validate(user);
-        assertTrue(violations.isEmpty());
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("birthday")));
     }
 
     @Test
@@ -186,8 +171,6 @@ public class UserTest {
         user.setEmail(null);
         user.setBirthday(null);
         violations = validator.validate(user);
-        assertTrue(violations.isEmpty());
+        assertFalse(violations.isEmpty());
     }
-
-
 }
