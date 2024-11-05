@@ -4,16 +4,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.validator.Marker;
 import ru.yandex.practicum.filmorate.service.MpaService;
 
 import java.util.List;
 
 @RequiredArgsConstructor
-@Validated
 @Slf4j
 @RestController
 @RequestMapping("/mpa")
@@ -30,7 +27,6 @@ public class MpaController {
         return mpaService.findById(id);
     }
 
-    @Validated({Marker.OnCreate.class})
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mpa createMpa(@Valid @RequestBody Mpa mpa) {
@@ -38,7 +34,6 @@ public class MpaController {
         return mpa;
     }
 
-    @Validated(Marker.OnUpdate.class)
     @PutMapping
     public Mpa updateMpa(@Valid @RequestBody Mpa mpa) {
         return mpaService.update(mpa);

@@ -4,16 +4,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.validator.Marker;
 import ru.yandex.practicum.filmorate.service.GenreService;
 
 import java.util.List;
 
 @RequiredArgsConstructor
-@Validated
 @Slf4j
 @RestController
 @RequestMapping("/genres")
@@ -30,7 +27,6 @@ public class GenreController {
         return genreService.findById(id);
     }
 
-    @Validated({Marker.OnCreate.class})
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Genre createGenre(@Valid @RequestBody Genre genre) {
@@ -38,7 +34,6 @@ public class GenreController {
         return genre;
     }
 
-    @Validated(Marker.OnUpdate.class)
     @PutMapping
     public Genre updateGenre(@Valid @RequestBody Genre genre) {
         return genreService.update(genre);

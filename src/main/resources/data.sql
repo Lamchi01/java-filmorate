@@ -1,46 +1,37 @@
-delete
-from users;
-delete
-from films;
-delete
-from likes;
-delete
-from genres;
-delete
-from mpa;
+DELETE
+FROM users;
+DELETE
+FROM films;
+DELETE
+FROM likes;
+DELETE
+FROM genres;
+DELETE
+FROM mpa;
 
-alter table users
-    alter column user_id restart with 1;
+ALTER TABLE users
+    ALTER COLUMN user_id RESTART WITH 1;
 
-alter table genres
-    alter column genre_id restart with 1;
+ALTER TABLE genres
+    ALTER COLUMN genre_id RESTART WITH 1;
 
-insert into genres (name)
-values ('Комедия');
-insert into genres (name)
-values ('Драма');
-insert into genres (name)
-values ('Мультфильм');
-insert into genres (name)
-values ('Триллер');
-insert into genres (name)
-values ('Документальный');
-insert into genres (name)
-values ('Боевик');
+INSERT INTO genres (name)
+VALUES ('Комедия'),
+       ('Драма'),
+       ('Мультфильм'),
+       ('Триллер'),
+       ('Документальный'),
+       ('Боевик');
 
-alter table mpa
-    alter column mpa_id restart with 1;
+ALTER TABLE mpa
+    ALTER COLUMN mpa_id RESTART WITH 1;
 
-insert into mpa (name)
-values ('G');
-insert into mpa (name)
-values ('PG');
-insert into mpa (name)
-values ('PG-13');
-insert into mpa (name)
-values ('R');
-insert into mpa (name)
-values ('NC-17');
+INSERT INTO mpa (name)
+VALUES ('G'),
+       ('PG'),
+       ('PG-13'),
+       ('R'),
+       ('NC-17');
 
-alter table films
-    alter column film_id restart with 1;
+ALTER TABLE films
+    ALTER COLUMN film_id RESTART WITH 1;
