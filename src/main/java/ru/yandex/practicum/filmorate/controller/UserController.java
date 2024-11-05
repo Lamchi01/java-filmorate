@@ -3,15 +3,12 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.model.validator.Marker;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
 
-@Validated
 @Slf4j
 @RestController
 @RequestMapping("/users")
@@ -32,14 +29,12 @@ public class UserController {
         return userService.findById(id);
     }
 
-    @Validated(Marker.OnCreate.class)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User createUser(@Valid @RequestBody User user) {
         return userService.create(user);
     }
 
-    @Validated({Marker.OnUpdate.class})
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
         return userService.update(user);

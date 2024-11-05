@@ -7,13 +7,11 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.model.validator.Marker;
 
 import java.time.LocalDate;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FilmTest {
     ValidatorFactory factory;
@@ -40,49 +38,34 @@ public class FilmTest {
 
     @Test
     public void validFilmOnCreate() {
-        violations = validator.validate(film, Marker.OnCreate.class);
+        violations = validator.validate(film);
         assertTrue(violations.isEmpty());
     }
 
     @Test
     public void validFilmOnUpdate() {
         film.setId(1L);
-        violations = validator.validate(film, Marker.OnUpdate.class);
+        violations = validator.validate(film);
         assertTrue(violations.isEmpty());
     }
 
     @Test
     public void nullIdOnCreate() {
-        violations = validator.validate(film, Marker.OnCreate.class);
+        violations = validator.validate(film);
         assertTrue(violations.isEmpty());
-    }
-
-    @Test
-    public void nullIdOnUpdate() {
-        violations = validator.validate(film, Marker.OnUpdate.class);
-        assertEquals(1, violations.size());
-        assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("id")));
-    }
-
-    @Test
-    public void notNullIdOnCreate() {
-        film.setId(1L);
-        violations = validator.validate(film, Marker.OnCreate.class);
-        assertEquals(1, violations.size());
-        assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("id")));
     }
 
     @Test
     public void notNullIdOnUpdate() {
         film.setId(1L);
-        violations = validator.validate(film, Marker.OnUpdate.class);
+        violations = validator.validate(film);
         assertTrue(violations.isEmpty());
     }
 
     @Test
     public void wrongNameOnCreate() {
         film.setName("");
-        violations = validator.validate(film, Marker.OnCreate.class);
+        violations = validator.validate(film);
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("name")));
     }
@@ -90,7 +73,7 @@ public class FilmTest {
     @Test
     public void nullNameOnCreate() {
         film.setName(null);
-        violations = validator.validate(film, Marker.OnCreate.class);
+        violations = validator.validate(film);
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("name")));
     }
@@ -99,14 +82,16 @@ public class FilmTest {
     public void wrongNameOnUpdate() {
         film.setName("");
         violations = validator.validate(film);
-        assertTrue(violations.isEmpty());
+        assertEquals(1, violations.size());
+        assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("name")));
     }
 
     @Test
     public void nullNameOnUpdate() {
         film.setName(null);
         violations = validator.validate(film);
-        assertTrue(violations.isEmpty());
+        assertEquals(1, violations.size());
+        assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("name")));
     }
 
     @Test
@@ -120,7 +105,7 @@ public class FilmTest {
     @Test
     public void nullDescriptionOnCreate() {
         film.setDescription(null);
-        violations = validator.validate(film, Marker.OnCreate.class);
+        violations = validator.validate(film);
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("description")));
     }
@@ -129,7 +114,8 @@ public class FilmTest {
     public void nullDescriptionOnUpdate() {
         film.setDescription(null);
         violations = validator.validate(film);
-        assertTrue(violations.isEmpty());
+        assertEquals(1, violations.size());
+        assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("description")));
     }
 
     @Test
@@ -143,7 +129,7 @@ public class FilmTest {
     @Test
     public void nullReleaseDateOnCreate() {
         film.setReleaseDate(null);
-        violations = validator.validate(film, Marker.OnCreate.class);
+        violations = validator.validate(film);
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("releaseDate")));
     }
@@ -152,7 +138,8 @@ public class FilmTest {
     public void nullReleaseDateOnUpdate() {
         film.setReleaseDate(null);
         violations = validator.validate(film);
-        assertTrue(violations.isEmpty());
+        assertEquals(1, violations.size());
+        assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("releaseDate")));
     }
 
     @Test
@@ -166,7 +153,7 @@ public class FilmTest {
     @Test
     public void nullDurationOnCreate() {
         film.setDuration(null);
-        violations = validator.validate(film, Marker.OnCreate.class);
+        violations = validator.validate(film);
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("duration")));
     }
@@ -175,7 +162,8 @@ public class FilmTest {
     public void nullDurationOnUpdate() {
         film.setDuration(null);
         violations = validator.validate(film);
-        assertTrue(violations.isEmpty());
+        assertEquals(1, violations.size());
+        assertTrue(violations.stream().anyMatch(o -> o.getPropertyPath().toString().equals("duration")));
     }
 
     @Test
@@ -186,6 +174,6 @@ public class FilmTest {
         film.setDuration(null);
         film.setReleaseDate(null);
         violations = validator.validate(film);
-        assertTrue(violations.isEmpty());
+        assertFalse(violations.isEmpty());
     }
 }
