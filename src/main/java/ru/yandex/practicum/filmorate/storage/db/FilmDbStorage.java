@@ -44,6 +44,8 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             "FROM film_directors fd " +
             "LEFT JOIN directors d ON fd.director_id = d.director_id " +
             "WHERE fd.film_id IN (%s)";
+    private static final String DELETE_BY_ID_QUERY = "DELETE FROM films WHERE film_id = ?";
+
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -215,4 +217,12 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
                 });
     }
 
+
+    @Override
+    public void deleteById(long id) {
+        if (!removeOne(DELETE_BY_ID_QUERY, id)) {
+            throw new NotFoundException("Фильм с ID " + id + " не найден.");
+        }
+        log.trace("Фильм с ID: {} успешно удалён", id);
+    }
 }
