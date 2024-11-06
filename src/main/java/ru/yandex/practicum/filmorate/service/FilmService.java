@@ -3,14 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.BaseStorage;
-import ru.yandex.practicum.filmorate.storage.FilmGenreStorage;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.LikeStorage;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -24,6 +18,7 @@ public class FilmService {
     private final BaseStorage<User> userStorage;
     private final LikeStorage likeStorage;
     private final FilmGenreStorage filmGenreStorage;
+    private final DirectorStorage directorStorage;
     private final BaseStorage<Mpa> mpaStorage;
 
     /**
@@ -39,6 +34,7 @@ public class FilmService {
     public Film findById(Long id) {
         Film film = filmStorage.findById(id);
         film.setGenres(new LinkedHashSet<>(filmGenreStorage.getGenres(film)));
+        film.setDirectors(new LinkedHashSet<>(directorStorage.getDirectors(film)));
         return film;
     }
 
@@ -49,6 +45,11 @@ public class FilmService {
             filmGenreStorage.addGenres(film, genres.stream().toList());
             // оставить для MockMvc тестов контроллеров, так как жанры могут приходить без имени
             film.setGenres(new LinkedHashSet<>(filmGenreStorage.getGenres(film)));
+        }
+        Set<Director> directors = film.getDirectors();
+        if (directors != null && !directors.isEmpty()) {
+            directorStorage.addDirectors(film, directors.stream().toList());
+            film.setDirectors(new LinkedHashSet<>(directorStorage.getDirectors(film)));
         }
     }
 
@@ -67,11 +68,16 @@ public class FilmService {
             // оставить для MockMvc тестов контроллеров, так как жанры могут приходить без имени
             film.setGenres(new LinkedHashSet<>(filmGenreStorage.getGenres(film)));
         }
+        if (film.getDirectors() != null) {
+            directorStorage.deleteFilmDirectors(film);
+            directorStorage.addDirectors(film, film.getDirectors().stream().toList());
+            film.setDirectors(new LinkedHashSet<>(directorStorage.getDirectors(film)));
+        }
         if (film.getMpa() != null) savedFilm.setMpa(film.getMpa());
         if (film.getLikes() != null) savedFilm.setLikes(film.getLikes());
 
         filmStorage.update(film);
-        return savedFilm;
+        return film;
     }
 
     public void deleteAllFilms() {
@@ -98,4 +104,10 @@ public class FilmService {
         log.trace("Получен запрос на получение {} популярных фильмов", count);
         return filmStorage.popularFilms(count);
     }
+
+    public List<Film> findFilmsByDirectorId(long directorId, String sortedBy) {
+        log.trace("Получен запрос на получение фильмов режиссёра с ID = {}", directorId);
+        return filmStorage.findFilmsByDirectorId(directorId, sortedBy);
+    }
+
 }

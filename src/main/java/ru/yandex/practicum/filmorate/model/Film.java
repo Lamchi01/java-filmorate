@@ -44,6 +44,8 @@ public class Film implements Serializable {
 
     private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
 
+    private LinkedHashSet<Director> directors = new LinkedHashSet<>();
+
     @JsonIgnore
     private Set<Long> likes = new HashSet<>(); // список id пользователей, которые поставили лайк
 

@@ -43,6 +43,11 @@ public class BaseDbStorage<T> {
         return rowsDeleted > 0;
     }
 
+    protected boolean removeOne(String query, Object... params) {
+        int rowsDeleted = jdbc.update(query, params);
+        return rowsDeleted > 0;
+    }
+
     protected void update(String query, Object... params) {
         int rowsUpdated = jdbc.update(query, params);
         if (rowsUpdated == 0) {
