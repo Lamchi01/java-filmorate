@@ -12,4 +12,6 @@ public interface BaseStorage<T> {
     T update(T obj);
 
     void deleteAll();
+
+    void deleteById(long id);
 }

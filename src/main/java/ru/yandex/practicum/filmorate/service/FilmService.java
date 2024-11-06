@@ -110,4 +110,10 @@ public class FilmService {
         return filmStorage.findFilmsByDirectorId(directorId, sortedBy);
     }
 
+    public void deleteFilm(Long id) {
+        filmStorage.deleteById(id);
+        log.trace("Фильм с ID: {} успешно удалён", id);
+    }
+
+
 }
