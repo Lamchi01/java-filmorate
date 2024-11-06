@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.WrongRequestException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -63,4 +64,13 @@ public class FilmController {
     public List<Film> popularFilms(@RequestParam(defaultValue = "10") @Positive @NotNull Integer count) {
         return filmService.popularFilms(count);
     }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> findByDirectorId(@PathVariable long directorId, @RequestParam(defaultValue = "year") String sortBy) {
+        if (!sortBy.equals("year") && !sortBy.equals("likes")) {
+            throw new WrongRequestException("Указано неверное значение условия сортировки ответа (sortedBy)");
+        }
+        return filmService.findFilmsByDirectorId(directorId, sortBy);
+    }
+
 }

@@ -50,13 +50,13 @@ public class LikeDbStorageTest {
         user3 = userStorage.create(user3);
 
         film1 = new Film(null, "Film1", "desc1", LocalDate.of(1991, 1, 1), 110L, new Mpa(1L, "G"), new LinkedHashSet<>(),
-                new HashSet<>(), 0L);
+                new LinkedHashSet<>(), new HashSet<>(), 0L);
         film1 = filmStorage.create(film1);
         film2 = new Film(null, "Film2", "desc2", LocalDate.of(1992, 1, 1), 110L, new Mpa(2L, "PG"), new LinkedHashSet<>(),
-                new HashSet<>(), 0L);
+                new LinkedHashSet<>(), new HashSet<>(), 0L);
         film2 = filmStorage.create(film2);
         film3 = new Film(null, "Film3", "desc3", LocalDate.of(1993, 1, 1), 110L, new Mpa(3L, "PG-13"),
-                new LinkedHashSet<>(), new HashSet<>(), 0L);
+                new LinkedHashSet<>(), new LinkedHashSet<>(), new HashSet<>(), 0L);
         film3 = filmStorage.create(film3);
     }
 
@@ -81,7 +81,7 @@ public class LikeDbStorageTest {
 
         // добавить лайк не существующего фильма, должно быть исключение
         Film film = new Film(1000L, "Film1000", "desc1000", LocalDate.of(1993, 1, 1), 110L, new Mpa(3L, "PG-13"),
-                new LinkedHashSet<>(), new HashSet<>(), 0L);
+                new LinkedHashSet<>(), new LinkedHashSet<>(), new HashSet<>(), 0L);
         assertThrows(DataIntegrityViolationException.class, () -> likeStorage.likeFilm(film, user1));
 
         // добавить лайк от не существующего юзера, должно быть исключение
@@ -93,7 +93,7 @@ public class LikeDbStorageTest {
     public void deleteLike() {
         // удалить лайк не существующего фильма, должно быть исключение
         Film film = new Film(1000L, "Film1000", "desc1000", LocalDate.of(1993, 1, 1), 110L, new Mpa(3L, "PG-13"),
-                new LinkedHashSet<>(), new HashSet<>(), 0L);
+                new LinkedHashSet<>(), new LinkedHashSet<>(), new HashSet<>(), 0L);
         assertDoesNotThrow(() -> likeStorage.deleteLike(film, user1));
 
         // удалить лайк от не существующего юзера, должно быть исключение

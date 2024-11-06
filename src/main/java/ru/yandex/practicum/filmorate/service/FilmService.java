@@ -98,4 +98,9 @@ public class FilmService {
         log.trace("Получен запрос на получение {} популярных фильмов", count);
         return filmStorage.popularFilms(count);
     }
+
+    public List<Film> findFilmsByDirectorId(long directorId, String sortedBy) {
+        log.trace("Получен запрос на получение фильмов режиссёра с ID = {}", directorId);
+        return filmStorage.findFilmsByDirectorId(directorId, sortedBy);
+    }
 }
