@@ -20,7 +20,8 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id";
     private static final String FIND_BY_ID_QUERY = "SELECT f.*, m.name mpa_name FROM films f " +
             "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE f.film_id = ?";
-    private static final String FIND_BY_DIRECTOR_ID_QUERY = "SELECT * FROM films WHERE film_id IN " +
+    private static final String FIND_BY_DIRECTOR_ID_QUERY = "SELECT f.*, m.name mpa_name FROM films f " +
+            "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE film_id IN " +
             "(SELECT film_id FROM film_directors WHERE director_id = ?)";
     private static final String INSERT_QUERY = "INSERT INTO films (name, description, release_date, duration, mpa_id) " +
             "VALUES (?, ?, ?, ?, ?)";
@@ -112,7 +113,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
 
     @Override
     public List<Film> findFilmsByDirectorId(long directorId, String sortedBy) {
-        List<Film> directorFilms = findMany(FIND_BY_DIRECTOR_ID_QUERY);
+        List<Film> directorFilms = findMany(FIND_BY_DIRECTOR_ID_QUERY, directorId);
 
         Map<Long, LinkedHashSet<Genre>> genres = getAllFilmGenres();
         Map<Long, LinkedHashSet<Director>> directors = getAllFilmDirectors();
@@ -128,7 +129,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         if (sortedBy.equals("year")) {
             return directorFilms.stream().sorted(Comparator.comparing(Film::getReleaseDate)).toList();
         } else {
-            return directorFilms.stream().sorted(Comparator.comparing(Film::getCountLikes)).toList();
+            return directorFilms.stream().sorted(Comparator.comparing(Film::getCountLikes).reversed()).toList();
         }
     }
 
