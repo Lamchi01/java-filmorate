@@ -55,4 +55,9 @@ public class GenreDbStorage extends BaseDbStorage<Genre> implements BaseStorage<
         removeAll(DELETE_ALL_QUERY);
         log.trace("Удалены все жанры");
     }
+
+    @Override
+    public void deleteById(long id) {
+
+    }
 }

@@ -18,6 +18,8 @@ public class UserDbStorage extends BaseDbStorage<User> implements BaseStorage<Us
     private static final String INSERT_QUERY = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";
     private static final String DELETE_ALL_QUERY = "DELETE FROM users";
+    private static final String DELETE_BY_ID_QUERY = "DELETE FROM users WHERE user_id = ?";
+
 
     public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
@@ -59,5 +61,14 @@ public class UserDbStorage extends BaseDbStorage<User> implements BaseStorage<Us
     public void deleteAll() {
         removeAll(DELETE_ALL_QUERY);
         log.trace("Удалены все пользователи");
+    }
+
+
+    @Override
+    public void deleteById(long id) {
+        if (!removeOne(DELETE_BY_ID_QUERY, id)) {
+            throw new NotFoundException("Пользователь с ID " + id + " не найден.");
+        }
+        log.trace("Пользователь с ID: {} успешно удалён", id);
     }
 }

@@ -46,6 +46,11 @@ public class MpaDbStorage extends BaseDbStorage<Mpa> implements BaseStorage<Mpa>
         log.trace("Удалены все рейтинги MPA");
     }
 
+    @Override
+    public void deleteById(long id) {
+
+    }
+
     public Mpa create(Mpa mpa) {
         long id = insert(INSERT_QUERY, mpa.getName());
         mpa.setId(id);

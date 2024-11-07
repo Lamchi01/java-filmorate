@@ -72,4 +72,10 @@ public class UserService {
         User other = userStorage.findById(otherId);
         return friendStorage.getCommonFriends(user, other);
     }
+
+    public void deleteUser(Long id) {
+        userStorage.deleteById(id);
+        log.trace("Пользователь с ID: {} успешно удалён", id);
+    }
+
 }
