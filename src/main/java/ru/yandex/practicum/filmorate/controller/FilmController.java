@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.WrongRequestException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -75,8 +74,8 @@ public class FilmController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFilm(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteFilm(@PathVariable Long id) {
         filmService.deleteFilm(id);
-        return ResponseEntity.noContent().build();
     }
 }
