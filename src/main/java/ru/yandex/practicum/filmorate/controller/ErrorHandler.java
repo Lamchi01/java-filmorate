@@ -36,13 +36,13 @@ public class ErrorHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
-        return new ErrorResponse(ex.getBindingResult().getAllErrors().getFirst().getDefaultMessage());
+        return new ErrorResponse(ex.getBindingResult().getAllErrors().get(0).getDefaultMessage());
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleConstraintViolationException(ConstraintViolationException ex) {
-        return new ErrorResponse(ex.getConstraintViolations().stream().toList().getFirst().getMessage());
+        return new ErrorResponse(ex.getConstraintViolations().stream().toList().get(0).getMessage());
     }
 
     @ExceptionHandler(InternalServerException.class)
