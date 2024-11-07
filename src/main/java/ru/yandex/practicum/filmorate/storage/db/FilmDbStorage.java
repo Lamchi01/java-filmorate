@@ -45,6 +45,20 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             "LEFT JOIN directors d ON fd.director_id = d.director_id " +
             "WHERE fd.film_id IN (%s)";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM films WHERE film_id = ?";
+    private static final String FIND_COMMON_FILMS = "SELECT DISTINCT f.FILM_ID,\n" +
+            "\tf.NAME, \n" +
+            "\tf.DESCRIPTION,\n" +
+            "\tf.RELEASE_DATE,\n" +
+            "\tf.DURATION,\n" +
+            "\tf.MPA_ID,\n" +
+            "\tm.NAME AS mpa_name,\n" +
+            "\tf.COUNT_LIKES \n" +
+            "FROM FILMS f \n" +
+            "LEFT JOIN LIKES l1 ON f.FILM_ID = l1.FILM_ID \n" +
+            "LEFT JOIN LIKES l2 ON f.FILM_ID = l2.FILM_ID \n" +
+            "LEFT JOIN MPA m ON f.MPA_ID = m.MPA_ID \n" +
+            "WHERE l1.USER_ID = ? AND l2.USER_ID = ?\n" +
+            "ORDER BY f.COUNT_LIKES desc;";
 
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
@@ -133,6 +147,24 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         } else {
             return directorFilms.stream().sorted(Comparator.comparing(Film::getCountLikes).reversed()).toList();
         }
+    }
+
+    @Override
+    public List<Film> findCommonFilms(long userId, long friendId) {
+        List<Film> films = findMany(FIND_COMMON_FILMS, userId, friendId);
+
+        Map<Long, LinkedHashSet<Genre>> genres = getFilmsGenres(films);
+        Map<Long, LinkedHashSet<Director>> directors = getFilmsDirectors(films);
+
+        for (Film film : films) {
+            if (genres.containsKey(film.getId())) {
+                film.setGenres(new LinkedHashSet<>(genres.get(film.getId())));
+            }
+            if (directors.containsKey(film.getId())) {
+                film.setDirectors(new LinkedHashSet<>(directors.get(film.getId())));
+            }
+        }
+        return films;
     }
 
     /**
