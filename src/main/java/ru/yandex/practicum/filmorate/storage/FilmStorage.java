@@ -11,3 +11,4 @@ public interface FilmStorage extends BaseStorage<Film> {
 
     List<Film> findCommonFilms(long userId, long friendId);
 }
+

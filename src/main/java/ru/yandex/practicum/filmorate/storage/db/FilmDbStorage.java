@@ -60,7 +60,6 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             "WHERE l1.USER_ID = ? AND l2.USER_ID = ?\n" +
             "ORDER BY f.COUNT_LIKES desc;";
 
-
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
     }
