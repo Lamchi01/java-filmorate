@@ -44,6 +44,18 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             "FROM film_directors fd " +
             "LEFT JOIN directors d ON fd.director_id = d.director_id " +
             "WHERE fd.film_id IN (%s)";
+    private static final String FIND_COMMON_FILMS_QUERY = "SELECT DISTINCT f.FILM_ID,\n" +
+            "\tf.NAME, \n" +
+            "\tf.DESCRIPTION,\n" +
+            "\tf.RELEASE_DATE,\n" +
+            "\tf.DURATION,\n" +
+            "\tf.MPA_ID,\n" +
+            "\tf.COUNT_LIKES \n" +
+            "FROM FILMS f \n" +
+            "LEFT JOIN LIKES l1 ON f.FILM_ID = l1.FILM_ID \n" +
+            "LEFT JOIN LIKES l2 ON f.FILM_ID = l2.FILM_ID \n" +
+            "WHERE l1.USER_ID = ? AND l2.USER_ID = ?\n" +
+            "ORDER BY f.COUNT_LIKES desc;";
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -133,6 +145,11 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         }
     }
 
+    @Override
+    public List<Film> findCommonFilms(long userId, long friendId) {
+        return findMany(FIND_COMMON_FILMS_QUERY, userId, friendId);
+    }
+
     /**
      * Метод для выборки всех жанров всех фильмов
      *
@@ -214,5 +231,4 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
                     return res;
                 });
     }
-
 }

@@ -110,4 +110,8 @@ public class FilmService {
         return filmStorage.findFilmsByDirectorId(directorId, sortedBy);
     }
 
+    public List<Film> findCommonFilms(long userId, long friendId) {
+        return filmStorage.findCommonFilms(userId, friendId);
+    }
+
 }
