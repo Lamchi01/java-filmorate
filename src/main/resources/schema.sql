@@ -124,3 +124,18 @@ CREATE TABLE IF NOT EXISTS reviews_likes
     CONSTRAINT reviews_likes_pk
         PRIMARY KEY (review_id, user_id)
 );
+
+CREATE TABLE IF NOT EXISTS events
+(
+    timestamp TIMESTAMP NOT NULL,
+    user_id BIGINT NOT NULL,
+    event_type VARCHAR NOT NULL,
+    operation VARCHAR NOT NULL,
+    event_id BIGINT NOT NULL AUTO_INCREMENT,
+    entity_id BIGINT NOT NULL,
+
+    CONSTRAINT user_id_fk
+        FOREIGN KEY (user_id) REFERENCES users ON DELETE CASCADE,
+    CONSTRAINT events_id_pk
+        PRIMARY KEY (event_id)
+);

@@ -12,6 +12,11 @@ DELETE
 FROM reviews;
 DELETE
 FROM reviews_likes;
+DELETE
+FROM events;
+
+ALTER TABLE events
+    ALTER COLUMN event_id RESTART WITH 1;
 
 ALTER TABLE users
     ALTER COLUMN user_id RESTART WITH 1;
