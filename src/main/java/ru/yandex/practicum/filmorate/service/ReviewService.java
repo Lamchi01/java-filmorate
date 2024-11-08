@@ -39,7 +39,7 @@ public class ReviewService {
 
     public void deleteById(Long id) {
         Review review = reviewStorage.findById(id);
-        reviewStorage.delete(review);
+        reviewStorage.deleteById(id);
     }
 
     public Review update(Review review) {
