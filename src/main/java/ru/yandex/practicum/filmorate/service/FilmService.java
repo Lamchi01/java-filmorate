@@ -115,5 +115,7 @@ public class FilmService {
         log.trace("Фильм с ID: {} успешно удалён", id);
     }
 
-
+    public List<Film> findCommonFilms(long userId, long friendId) {
+        return filmStorage.findCommonFilms(userId, friendId);
+    }
 }
