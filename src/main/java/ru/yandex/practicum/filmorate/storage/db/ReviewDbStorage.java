@@ -68,9 +68,9 @@ public class ReviewDbStorage extends BaseDbStorage<Review> implements ReviewStor
     }
 
     @Override
-    public void delete(Review review) {
-        removeOne(DELETE_BY_ID_QUERY, review.getReviewId());
-        log.trace("Удален отзыв с ID: {}", review.getReviewId());
+    public void deleteById(long id) {
+        removeOne(DELETE_BY_ID_QUERY, id);
+        log.trace("Удален отзыв с ID: {}", id);
     }
 
     @Override
