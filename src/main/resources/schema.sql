@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS films
     duration     BIGINT NOT NULL,
     mpa_id       BIGINT NOT NULL,
     count_likes  BIGINT DEFAULT 0,
-    CONSTRAINT films_ps
+    CONSTRAINT films_pk
         PRIMARY KEY (film_id),
     CONSTRAINT films_mpa_FK
         FOREIGN KEY (mpa_id) REFERENCES mpa
@@ -86,12 +86,41 @@ CREATE TABLE IF NOT EXISTS directors
 
 CREATE TABLE IF NOT EXISTS film_directors
 (
-    film_id  BIGINT NOT NULL,
+    film_id     BIGINT NOT NULL,
     director_id BIGINT NOT NULL,
     CONSTRAINT film_directors_films_fk
         FOREIGN KEY (film_id) REFERENCES films ON DELETE CASCADE,
     CONSTRAINT film_directors_directors_fk
         FOREIGN KEY (director_id) REFERENCES directors ON DELETE CASCADE,
-    CONSTRAINT film_directors_PK
+    CONSTRAINT film_directors_pk
         PRIMARY KEY (film_id, director_id)
+);
+
+CREATE TABLE IF NOT EXISTS reviews
+(
+    review_id   BIGINT AUTO_INCREMENT,
+    content     VARCHAR,
+    is_positive BOOL,
+    user_id     BIGINT NOT NULL,
+    film_id     BIGINT NOT NULL,
+    useful      BIGINT,
+    CONSTRAINT users_fk_1
+        FOREIGN KEY (user_id) REFERENCES users ON DELETE CASCADE,
+    CONSTRAINT films_fk_2
+        FOREIGN KEY (film_id) REFERENCES films ON DELETE CASCADE,
+    CONSTRAINT reviews_pk
+        PRIMARY KEY (review_id)
+);
+
+CREATE TABLE IF NOT EXISTS reviews_likes
+(
+    review_id BIGINT AUTO_INCREMENT,
+    user_id   BIGINT NOT NULL,
+    is_like   BOOL,
+    CONSTRAINT reviews_likes_reviews_fk_1
+        FOREIGN KEY (review_id) REFERENCES reviews ON DELETE CASCADE,
+    CONSTRAINT reviews_likes_users_fk_2
+        FOREIGN KEY (user_id) REFERENCES users ON DELETE CASCADE,
+    CONSTRAINT reviews_likes_pk
+        PRIMARY KEY (review_id, user_id)
 );
