@@ -73,4 +73,9 @@ public class FilmController {
         return filmService.findFilmsByDirectorId(directorId, sortBy);
     }
 
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteFilm(@PathVariable Long id) {
+        filmService.deleteFilm(id);
+    }
 }
