@@ -11,7 +11,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.db.EventDbStorage;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 @Slf4j
@@ -40,28 +40,28 @@ public class ReviewService {
         filmStorage.findById(review.getFilmId());
         reviewStorage.create(review);
         Event event = Event.builder()
-                .timestamp(new Timestamp(System.currentTimeMillis()))
+                .timestamp(Instant.now().toEpochMilli())
                 .userId(review.getUserId())
-                .eventType("REVIEW")
-                .operation("ADD")
+                .eventType(Event.EventType.REVIEW)
+                .operation(Event.Operation.ADD)
                 .entityId(review.getReviewId())
                 .build();
         eventStorage.addEvent(event);
-        log.trace("Создано событие добавления review - {}", event);
+        log.info("Создано событие добавления review - {}", event);
     }
 
     public void deleteById(Long id) {
         Review review = reviewStorage.findById(id);
         reviewStorage.deleteById(id);
         Event event = Event.builder()
-                .timestamp(new Timestamp(System.currentTimeMillis()))
+                .timestamp(Instant.now().toEpochMilli())
                 .userId(review.getUserId())
-                .eventType("REVIEW")
-                .operation("REMOVE")
+                .eventType(Event.EventType.REVIEW)
+                .operation(Event.Operation.REMOVE)
                 .entityId(review.getReviewId())
                 .build();
         eventStorage.addEvent(event);
-        log.trace("Создано событие удаления review - {}", event);
+        log.info("Создано событие удаления review - {}", event);
     }
 
     public Review update(Review review) {
@@ -81,14 +81,14 @@ public class ReviewService {
 
         reviewStorage.update(review);
         Event event = Event.builder()
-                .timestamp(new Timestamp(System.currentTimeMillis()))
+                .timestamp(Instant.now().toEpochMilli())
                 .userId(review.getUserId())
-                .eventType("REVIEW")
-                .operation("UPDATE")
+                .eventType(Event.EventType.REVIEW)
+                .operation(Event.Operation.UPDATE)
                 .entityId(review.getReviewId())
                 .build();
         eventStorage.addEvent(event);
-        log.trace("Создано событие обновления review - {}", event);
+        log.info("Создано событие обновления review - {}", event);
         return review;
     }
 
