@@ -4,13 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Event;
-import ru.yandex.practicum.filmorate.model.EventDto;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 
@@ -59,14 +58,14 @@ public class UserService {
         User friend = userStorage.findById(friendId);
         friendStorage.addFriend(user, friend);
         Event event = Event.builder()
-                .timestamp(new Timestamp(System.currentTimeMillis()))
+                .timestamp(Instant.now().toEpochMilli())
                 .userId(userId)
-                .eventType("FRIEND")
-                .operation("ADD")
+                .eventType(Event.EventType.FRIEND)
+                .operation(Event.Operation.ADD)
                 .entityId(friendId)
                 .build();
         eventStorage.addEvent(event);
-        log.trace("Создано событие добавления friend - {}", event);
+        log.info("Создано событие добавления friend - {}", event);
         return user;
     }
 
@@ -75,14 +74,14 @@ public class UserService {
         User friend = userStorage.findById(friendId);
         friendStorage.deleteFriend(user, friend);
         Event event = Event.builder()
-                .timestamp(new Timestamp(System.currentTimeMillis()))
+                .timestamp(Instant.now().toEpochMilli())
                 .userId(userId)
-                .eventType("FRIEND")
-                .operation("REMOVE")
+                .eventType(Event.EventType.FRIEND)
+                .operation(Event.Operation.REMOVE)
                 .entityId(friendId)
                 .build();
         eventStorage.addEvent(event);
-        log.trace("Создано событие удаления friend - {}", event);
+        log.info("Создано событие удаления friend - {}", event);
         return user;
     }
 
@@ -102,7 +101,8 @@ public class UserService {
         log.trace("Пользователь с ID: {} успешно удалён", id);
     }
 
-    public Collection<EventDto> getEvents(long id) {
+    public Collection<Event> getEvents(long id) {
+        findById(id);
         return eventStorage.getEvents(id);
     }
 

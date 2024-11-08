@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.*;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -92,14 +92,14 @@ public class FilmService {
         likeStorage.likeFilm(film, user);
         log.trace("Добавлен лайк к фильму с ID: {} пользователем с ID: {}", filmId, userId);
         Event event = Event.builder()
-                .timestamp(new Timestamp(System.currentTimeMillis()))
+                .timestamp(Instant.now().toEpochMilli())
                 .userId(userId)
-                .eventType("LIKE")
-                .operation("ADD")
+                .eventType(Event.EventType.LIKE)
+                .operation(Event.Operation.ADD)
                 .entityId(filmId)
                 .build();
         eventStorage.addEvent(event);
-        log.trace("Создано событие добавления like - {}", event);
+        log.info("Создано событие добавления like - {}", event);
         return film;
     }
 
@@ -109,14 +109,14 @@ public class FilmService {
         likeStorage.deleteLike(film, user);
         log.trace("Удален лайк к фильму с ID: {} пользователя с ID: {}", filmId, userId);
         Event event = Event.builder()
-                .timestamp(new Timestamp(System.currentTimeMillis()))
+                .timestamp(Instant.now().toEpochMilli())
                 .userId(userId)
-                .eventType("LIKE")
-                .operation("REMOVE")
+                .eventType(Event.EventType.LIKE)
+                .operation(Event.Operation.REMOVE)
                 .entityId(filmId)
                 .build();
         eventStorage.addEvent(event);
-        log.trace("Создано событие удаления like - {}", event);
+        log.info("Создано событие удаления like - {}", event);
         return film;
     }
 

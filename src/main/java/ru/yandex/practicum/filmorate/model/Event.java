@@ -6,22 +6,22 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder(toBuilder = true)
 @Data
 public class Event {
     @NotNull
-    private Timestamp timestamp;
+    private Long timestamp;
     @NotNull
     private Long userId;
     @NotNull
-    private String eventType;
+    private EventType eventType;
     @NotNull
-    private String operation;
+    private Operation operation;
     private Long eventId;
     @NotNull
     private Long entityId;
+    public enum EventType {LIKE, REVIEW, FRIEND}
+    public enum Operation {REMOVE, ADD, UPDATE}
 }
