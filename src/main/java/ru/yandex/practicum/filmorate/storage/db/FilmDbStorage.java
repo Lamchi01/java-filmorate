@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.WrongRequestException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -20,9 +21,21 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id";
     private static final String FIND_BY_ID_QUERY = "SELECT f.*, m.name mpa_name FROM films f " +
             "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE f.film_id = ?";
+    private static final String FIND_BY_NAME_QUERY = "SELECT f.*, m.name mpa_name FROM films f " +
+            "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE f.name like ?";
     private static final String FIND_BY_DIRECTOR_ID_QUERY = "SELECT f.*, m.name mpa_name FROM films f " +
             "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE film_id IN " +
             "(SELECT film_id FROM film_directors WHERE director_id = ?)";
+    private static final String FIND_BY_DIRECTOR_NAME_QUERY = "SELECT f.*, m.name mpa_name FROM films f " +
+            "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE film_id IN " +
+            "(SELECT fd.film_id FROM film_directors fd " +
+            "LEFT JOIN directors d ON fd.director_id = d.director_id" +
+            " WHERE d.name like ?)";
+    private static final String FIND_BY_DIRECTOR_NAME_AND_FILM_NAME_QUERY = "SELECT f.*, m.name mpa_name FROM films f " +
+            "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE film_id IN " +
+            "(SELECT fd.film_id FROM film_directors fd " +
+            "LEFT JOIN directors d ON fd.director_id = d.director_id " +
+            " WHERE d.name like ?) and f.name like ?";
     private static final String INSERT_QUERY = "INSERT INTO films (name, description, release_date, duration, mpa_id) " +
             "VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE films " +
@@ -164,6 +177,62 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             }
         }
         return films;
+    }
+
+    @Override
+    public List<Film> findFilms(String query, String by) {
+        List<Film> films = new ArrayList<>();
+        String[] queryParts = query.split(",");
+        String[] byParts = by.split(",");
+        if (byParts.length == 1) {
+            if (byParts[0].equals("title")) {
+                films = findMany(FIND_BY_NAME_QUERY, "%" + query + "%");
+            } else if (byParts[0].equals("director")) {
+                films = findMany(FIND_BY_DIRECTOR_NAME_QUERY, "%" + query + "%");
+            } else {
+                throw new WrongRequestException("Указано неверное значение критерия поиска (by) для поиска фильма." +
+                        " Значение переданного критерия поиска (by) = " + by);
+            }
+        } else if (byParts.length == 2) {
+            String directorQuery;
+            String titleQuery;
+            if (byParts[0].equals("title") && byParts[1].equals("director")) {
+                directorQuery = queryParts.length == 2 ? queryParts[1] : null;
+                titleQuery = queryParts[0];
+            } else if (byParts[0].equals("director") && byParts[1].equals("title")) {
+                directorQuery = queryParts[0];
+                titleQuery = queryParts.length == 2 ? queryParts[1] : null;
+            } else {
+                throw new WrongRequestException("Указано неверное значение критерия поиска (by) для поиска фильма." +
+                        " Значение переданного критерия поиска (by) = " + by);
+            }
+
+            if (directorQuery == null && titleQuery != null) {
+                films = findMany(FIND_BY_NAME_QUERY, "%" + titleQuery + "%");
+                films.addAll(findMany(FIND_BY_DIRECTOR_NAME_QUERY, "%" + queryParts[0] + "%"));
+            } else if (titleQuery == null && directorQuery != null) {
+                films = findMany(FIND_BY_DIRECTOR_NAME_QUERY, "%" + directorQuery + "%");
+                films.addAll(films = findMany(FIND_BY_NAME_QUERY, "%" + queryParts[0] + "%"));
+            } else if (directorQuery != null && titleQuery != null) {
+                films = findMany(FIND_BY_DIRECTOR_NAME_AND_FILM_NAME_QUERY, "%" + directorQuery + "%", "%" + titleQuery + "%");
+            }
+        } else {
+            throw new WrongRequestException("Указано неверное значение критерия поиска (by) для поиска фильма." +
+                    " Значение переданного критерия поиска (by) = " + by);
+        }
+
+        Map<Long, LinkedHashSet<Genre>> genres = getFilmsGenres(films);
+        Map<Long, LinkedHashSet<Director>> directors = getFilmsDirectors(films);
+
+        for (Film film : films) {
+            if (genres.containsKey(film.getId())) {
+                film.setGenres(new LinkedHashSet<>(genres.get(film.getId())));
+            }
+            if (directors.containsKey(film.getId())) {
+                film.setDirectors(new LinkedHashSet<>(directors.get(film.getId())));
+            }
+        }
+        return films.stream().sorted(Comparator.comparing(Film::getCountLikes)).toList();
     }
 
     /**

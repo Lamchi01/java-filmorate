@@ -134,4 +134,9 @@ public class FilmService {
     public List<Film> findCommonFilms(long userId, long friendId) {
         return filmStorage.findCommonFilms(userId, friendId);
     }
+
+    public List<Film> findFilms(String query, String by) {
+        log.trace("Получен запрос на поиск фильмов. Строка поиска = {}", query);
+        return filmStorage.findFilms(query, by);
+    }
 }
