@@ -84,4 +84,14 @@ public class FilmController {
                                       @RequestParam @Positive @NotNull long friendId) {
         return filmService.findCommonFilms(userId, friendId);
     }
+
+    @GetMapping("/search")
+    public List<Film> findFilms(@RequestParam String query,
+                                @RequestParam String by) {
+        if (!by.equals("director") && !by.equals("title")
+                && !by.equals("director,title") && !by.equals("title,director")) {
+            throw new WrongRequestException("Указано неверное значение критерия поиска (by)");
+        }
+        return filmService.findFilms(query, by);
+    }
 }
