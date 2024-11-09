@@ -6,12 +6,13 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
-import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
 
-import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+
+import static ru.yandex.practicum.filmorate.model.Event.EventType.*;
+import static ru.yandex.practicum.filmorate.model.Event.Operation.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,7 +20,7 @@ import java.util.List;
 public class UserService {
     private final BaseStorage<User> userStorage;
     private final FriendStorage friendStorage;
-    private final EventStorage eventStorage;
+    private final EventService eventService;
 
     public List<User> findAll() {
         return userStorage.findAll();
@@ -57,15 +58,11 @@ public class UserService {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
         friendStorage.addFriend(user, friend);
-        Event event = Event.builder()
-                .timestamp(Instant.now().toEpochMilli())
-                .userId(userId)
-                .eventType(Event.EventType.FRIEND)
-                .operation(Event.Operation.ADD)
-                .entityId(friendId)
-                .build();
-        eventStorage.addEvent(event);
-        log.info("Создано событие добавления friend - {}", event);
+        eventService.addEvent(
+                userId,
+                FRIEND,
+                ADD,
+                friendId);
         return user;
     }
 
@@ -73,15 +70,12 @@ public class UserService {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
         friendStorage.deleteFriend(user, friend);
-        Event event = Event.builder()
-                .timestamp(Instant.now().toEpochMilli())
-                .userId(userId)
-                .eventType(Event.EventType.FRIEND)
-                .operation(Event.Operation.REMOVE)
-                .entityId(friendId)
-                .build();
-        eventStorage.addEvent(event);
-        log.info("Создано событие удаления friend - {}", event);
+        eventService.addEvent(
+                userId,
+                FRIEND,
+                REMOVE,
+                friendId
+        );
         return user;
     }
 
@@ -103,7 +97,6 @@ public class UserService {
 
     public Collection<Event> getEvents(long id) {
         findById(id);
-        return eventStorage.getEvents(id);
+        return eventService.getEvents(id);
     }
-
 }

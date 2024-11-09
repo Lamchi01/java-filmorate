@@ -6,10 +6,12 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.*;
 
-import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import static ru.yandex.practicum.filmorate.model.Event.EventType.*;
+import static ru.yandex.practicum.filmorate.model.Event.Operation.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -21,7 +23,7 @@ public class FilmService {
     private final FilmGenreStorage filmGenreStorage;
     private final DirectorStorage directorStorage;
     private final BaseStorage<Mpa> mpaStorage;
-    private final EventStorage eventStorage;
+    private final EventService eventService;
 
     /**
      * Поиск всех фильмов с маппингом жанров
@@ -91,15 +93,12 @@ public class FilmService {
         User user = userStorage.findById(userId);
         likeStorage.likeFilm(film, user);
         log.trace("Добавлен лайк к фильму с ID: {} пользователем с ID: {}", filmId, userId);
-        Event event = Event.builder()
-                .timestamp(Instant.now().toEpochMilli())
-                .userId(userId)
-                .eventType(Event.EventType.LIKE)
-                .operation(Event.Operation.ADD)
-                .entityId(filmId)
-                .build();
-        eventStorage.addEvent(event);
-        log.info("Создано событие добавления like - {}", event);
+        eventService.addEvent(
+                userId,
+                LIKE,
+                ADD,
+                filmId
+        );
         return film;
     }
 
@@ -108,15 +107,12 @@ public class FilmService {
         User user = userStorage.findById(userId);
         likeStorage.deleteLike(film, user);
         log.trace("Удален лайк к фильму с ID: {} пользователя с ID: {}", filmId, userId);
-        Event event = Event.builder()
-                .timestamp(Instant.now().toEpochMilli())
-                .userId(userId)
-                .eventType(Event.EventType.LIKE)
-                .operation(Event.Operation.REMOVE)
-                .entityId(filmId)
-                .build();
-        eventStorage.addEvent(event);
-        log.info("Создано событие удаления like - {}", event);
+        eventService.addEvent(
+                userId,
+                LIKE,
+                REMOVE,
+                filmId
+        );
         return film;
     }
 
