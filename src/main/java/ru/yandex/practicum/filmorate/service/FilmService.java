@@ -10,8 +10,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import static ru.yandex.practicum.filmorate.model.Event.EventType.*;
-import static ru.yandex.practicum.filmorate.model.Event.Operation.*;
+import static ru.yandex.practicum.filmorate.model.Event.EventType.LIKE;
+import static ru.yandex.practicum.filmorate.model.Event.Operation.ADD;
+import static ru.yandex.practicum.filmorate.model.Event.Operation.REMOVE;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -116,9 +117,9 @@ public class FilmService {
         return film;
     }
 
-    public List<Film> popularFilms(int count) {
-        log.trace("Получен запрос на получение {} популярных фильмов", count);
-        return filmStorage.popularFilms(count);
+    public List<Film> getPopularFilms(int count, Long genreId, Integer year) {
+        log.trace("Получен запрос на получение {} популярных фильмов с фильтрацией по жанру и году", count);
+        return filmStorage.getPopularFilms(count, genreId, year);
     }
 
     public List<Film> findFilmsByDirectorId(long directorId, String sortedBy) {

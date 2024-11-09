@@ -41,10 +41,6 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     private static final String UPDATE_QUERY = "UPDATE films " +
             "SET name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ? WHERE film_id = ?";
     private static final String DELETE_ALL_QUERY = "DELETE FROM films";
-    private static final String FIND_POPULAR_QUERY = "SELECT f.*, m.name mpa_name FROM films f " +
-            "LEFT JOIN likes l ON f.film_id = l.film_id " +
-            "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id " +
-            "GROUP BY f.film_id ORDER BY COUNT(l.user_id) DESC LIMIT ?";
     private static final String FIND_ALL_FILM_GENRES_QUERY = "SELECT fg.*, g.name genre_name FROM film_genres fg " +
             "LEFT JOIN genres g ON fg.genre_id = g.genre_id";
     private static final String FIND_ALL_FILM_DIRECTORS_QUERY = "SELECT fd.*, d.name director_name FROM film_directors fd " +
@@ -72,6 +68,19 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             "LEFT JOIN MPA m ON f.MPA_ID = m.MPA_ID \n" +
             "WHERE l1.USER_ID = ? AND l2.USER_ID = ?\n" +
             "ORDER BY f.COUNT_LIKES desc;";
+
+    private static final String BASE_POPULAR_QUERY =
+            "SELECT f.*, m.name AS mpa_name, COUNT(l.user_id) AS likes_count " +
+                    "FROM films f " +
+                    "LEFT JOIN likes l ON f.film_id = l.film_id " +
+                    "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id ";
+
+    private static final String GENRE_JOIN_CONDITION = "LEFT JOIN film_genres fg ON f.film_id = fg.film_id ";
+    private static final String GENRE_WHERE_CONDITION = "AND fg.genre_id = ? ";
+    private static final String YEAR_WHERE_CONDITION = "AND EXTRACT(YEAR FROM f.release_date) = ? ";
+    private static final String GROUP_BY_ORDER_CONDITION = "GROUP BY f.film_id ORDER BY likes_count DESC LIMIT ?";
+
+    private static final String BASE_WHERE_CONDITION = "WHERE 1=1 ";
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -122,12 +131,31 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     }
 
     @Override
-    public List<Film> popularFilms(int count) {
-        log.trace("Получен запрос на получение TOP {} популярных фильмов", count);
-        List<Film> films = findMany(FIND_POPULAR_QUERY, count);
+    public List<Film> getPopularFilms(int count, Long genreId, Integer year) {
+        StringBuilder sql = new StringBuilder(BASE_POPULAR_QUERY);
+
+        sql.append(genreId != null ? GENRE_JOIN_CONDITION : "");
+        sql.append(BASE_WHERE_CONDITION);
+
+        if (genreId != null) {
+            sql.append(GENRE_WHERE_CONDITION);
+        }
+
+        if (year != null) {
+            sql.append(YEAR_WHERE_CONDITION);
+        }
+
+        sql.append(GROUP_BY_ORDER_CONDITION);
+
+
+        Object[] params = buildParamsArray(genreId, year, count);
+
+        log.trace("Запрос на популярные фильмы: {}", sql);
+        List<Film> films = findMany(sql.toString(), params);
+
+
         Map<Long, LinkedHashSet<Genre>> genres = getFilmsGenres(films);
         Map<Long, LinkedHashSet<Director>> directors = getFilmsDirectors(films);
-
         for (Film film : films) {
             if (genres.containsKey(film.getId())) {
                 film.setGenres(new LinkedHashSet<>(genres.get(film.getId())));
@@ -137,6 +165,19 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             }
         }
         return films;
+    }
+
+
+    private Object[] buildParamsArray(Long genreId, Integer year, int count) {
+        if (genreId != null && year != null) {
+            return new Object[]{genreId, year, count};
+        } else if (genreId != null) {
+            return new Object[]{genreId, count};
+        } else if (year != null) {
+            return new Object[]{year, count};
+        } else {
+            return new Object[]{count};
+        }
     }
 
     @Override

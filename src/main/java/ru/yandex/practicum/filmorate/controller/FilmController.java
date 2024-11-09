@@ -60,9 +60,12 @@ public class FilmController {
         return filmService.deleteLike(id, userId);
     }
 
+
     @GetMapping("/popular")
-    public List<Film> popularFilms(@RequestParam(defaultValue = "10") @Positive @NotNull Integer count) {
-        return filmService.popularFilms(count);
+    public List<Film> popularFilms(@RequestParam(defaultValue = "10") @Positive @NotNull Integer count,
+                                   @RequestParam(required = false) Long genreId,
+                                   @RequestParam(required = false) Integer year) {
+        return filmService.getPopularFilms(count, genreId, year);
     }
 
     @GetMapping("/director/{directorId}")
