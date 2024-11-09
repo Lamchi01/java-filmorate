@@ -11,6 +11,9 @@ import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
 import java.util.List;
 
+import static ru.yandex.practicum.filmorate.model.Event.EventType.*;
+import static ru.yandex.practicum.filmorate.model.Event.Operation.*;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -18,6 +21,7 @@ public class ReviewService {
     private final ReviewStorage reviewStorage;
     private final FilmStorage filmStorage;
     private final BaseStorage<User> userStorage;
+    private final EventService eventService;
 
     public List<Review> findAll() {
         return reviewStorage.findAll();
@@ -35,11 +39,23 @@ public class ReviewService {
         userStorage.findById(review.getUserId());
         filmStorage.findById(review.getFilmId());
         reviewStorage.create(review);
+        eventService.addEvent(
+                review.getUserId(),
+                REVIEW,
+                ADD,
+                review.getReviewId()
+        );
     }
 
     public void deleteById(Long id) {
         Review review = reviewStorage.findById(id);
         reviewStorage.deleteById(id);
+        eventService.addEvent(
+                review.getUserId(),
+                REVIEW,
+                REMOVE,
+                review.getReviewId()
+        );
     }
 
     public Review update(Review review) {
@@ -58,6 +74,12 @@ public class ReviewService {
         if (review.getUseful() != null) savedReview.setUseful(review.getUseful());
 
         reviewStorage.update(review);
+        eventService.addEvent(
+                review.getUserId(),
+                REVIEW,
+                UPDATE,
+                review.getReviewId()
+        );
         return review;
     }
 

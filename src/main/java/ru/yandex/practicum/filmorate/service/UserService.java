@@ -3,11 +3,16 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
 
+import java.util.Collection;
 import java.util.List;
+
+import static ru.yandex.practicum.filmorate.model.Event.EventType.*;
+import static ru.yandex.practicum.filmorate.model.Event.Operation.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -15,6 +20,7 @@ import java.util.List;
 public class UserService {
     private final BaseStorage<User> userStorage;
     private final FriendStorage friendStorage;
+    private final EventService eventService;
 
     public List<User> findAll() {
         return userStorage.findAll();
@@ -52,6 +58,11 @@ public class UserService {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
         friendStorage.addFriend(user, friend);
+        eventService.addEvent(
+                userId,
+                FRIEND,
+                ADD,
+                friendId);
         return user;
     }
 
@@ -59,6 +70,12 @@ public class UserService {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
         friendStorage.deleteFriend(user, friend);
+        eventService.addEvent(
+                userId,
+                FRIEND,
+                REMOVE,
+                friendId
+        );
         return user;
     }
 
@@ -78,4 +95,8 @@ public class UserService {
         log.trace("Пользователь с ID: {} успешно удалён", id);
     }
 
+    public Collection<Event> getEvents(long id) {
+        findById(id);
+        return eventService.getEvents(id);
+    }
 }
