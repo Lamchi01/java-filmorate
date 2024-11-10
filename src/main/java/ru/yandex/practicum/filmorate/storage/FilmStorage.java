@@ -5,7 +5,9 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.util.List;
 
 public interface FilmStorage extends BaseStorage<Film> {
-    List<Film> popularFilms(int count);
+
+    List<Film> getPopularFilms(int count, Long genreId, Integer year);
+
 
     List<Film> findFilmsByDirectorId(long directorId, String sortedBy);
 

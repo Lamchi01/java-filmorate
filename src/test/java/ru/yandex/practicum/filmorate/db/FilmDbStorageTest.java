@@ -89,8 +89,8 @@ public class FilmDbStorageTest {
 
     @Test
     public void popularFilms() {
-        assertEquals(3, filmStorage.popularFilms(100).size());
-        assertEquals(2, filmStorage.popularFilms(2).size());
-        assertEquals(0, filmStorage.popularFilms(0).size());
+        assertEquals(3, filmStorage.getPopularFilms(100, null, null).size(), "Должны вернуть 3 фильма при запросе top-100");
+        assertEquals(2, filmStorage.getPopularFilms(2, null, null).size(), "Должны вернуть 2 фильма при запросе top-2");
+        assertEquals(0, filmStorage.getPopularFilms(0, null, null).size(), "Должны вернуть 0 фильмов при запросе top-0");
     }
 }
