@@ -14,5 +14,7 @@ public interface FilmStorage extends BaseStorage<Film> {
     List<Film> findCommonFilms(long userId, long friendId);
 
     List<Film> findFilms(String query, String by);
+
+    List<Film> getRecommendation(long id);
 }
 

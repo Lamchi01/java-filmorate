@@ -54,20 +54,22 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             "LEFT JOIN directors d ON fd.director_id = d.director_id " +
             "WHERE fd.film_id IN (%s)";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM films WHERE film_id = ?";
-    private static final String FIND_COMMON_FILMS = "SELECT DISTINCT f.FILM_ID,\n" +
-            "\tf.NAME, \n" +
-            "\tf.DESCRIPTION,\n" +
-            "\tf.RELEASE_DATE,\n" +
-            "\tf.DURATION,\n" +
-            "\tf.MPA_ID,\n" +
-            "\tm.NAME AS mpa_name,\n" +
-            "\tf.COUNT_LIKES \n" +
-            "FROM FILMS f \n" +
-            "LEFT JOIN LIKES l1 ON f.FILM_ID = l1.FILM_ID \n" +
-            "LEFT JOIN LIKES l2 ON f.FILM_ID = l2.FILM_ID \n" +
-            "LEFT JOIN MPA m ON f.MPA_ID = m.MPA_ID \n" +
-            "WHERE l1.USER_ID = ? AND l2.USER_ID = ?\n" +
-            "ORDER BY f.COUNT_LIKES desc;";
+    private static final String FIND_COMMON_FILMS = "SELECT DISTINCT f.*, m.name mpa_name FROM films f " +
+            "LEFT JOIN likes l1 ON f.film_id = l1.film_id " +
+            "LEFT JOIN likes l2 ON f.film_id = l2.film_id " +
+            "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id " +
+            "WHERE l1.user_id = ? AND l2.user_id = ? " +
+            "ORDER BY f.count_likes DESC";
+    private static final String FIND_INTERSECTION_LIKES_QUERY = "SELECT l.user_id FROM likes l WHERE l.film_id " +
+            "IN (SELECT film_id FROM likes WHERE user_id = ?) " +
+            "AND l.user_id <> ? " +
+            "GROUP BY l.user_id " +
+            "ORDER BY COUNT(l.film_id) DESC " +
+            "LIMIT ?";
+    private static final String FIND_LIKE_FILMS_FROM_USERS_QUERY = "SELECT f.*, m.name mpa_name FROM films f " +
+            "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id " +
+            "LEFT JOIN likes l ON f.film_id = l.film_id " +
+            "WHERE l.user_id IN (%s)";
 
     private static final String BASE_POPULAR_QUERY =
             "SELECT f.*, m.name AS mpa_name, COUNT(l.user_id) AS likes_count " +
@@ -166,7 +168,6 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         }
         return films;
     }
-
 
     private Object[] buildParamsArray(Long genreId, Integer year, int count) {
         if (genreId != null && year != null) {
@@ -274,6 +275,34 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             }
         }
         return films.stream().sorted(Comparator.comparing(Film::getCountLikes)).toList();
+    }
+
+    /**
+     * Метод получения рекомендаций по фильмам для заданного пользователя
+     *
+     * @param id - ID пользователя, которому нужно получить рекомендации
+     * @return - список рекомендованных фильмов
+     */
+    @Override
+    public List<Film> getRecommendation(long id) {
+        // получим список пользователей, у которых максимальное пересечение по лайкам с заданным
+        // последний параметр запроса - ограничение выборки
+        List<Long> otherUserIds = jdbc.queryForList(FIND_INTERSECTION_LIKES_QUERY, Long.class, id, id, 1);
+
+        if (otherUserIds.isEmpty()) {
+            return List.of();
+        }
+
+        // получим список фильмов, на которые поставил лайк заданный пользователь
+        List<Film> filmsFromUser1 = findMany(String.format(FIND_LIKE_FILMS_FROM_USERS_QUERY, "?"), id);
+
+        // получим список фильмов, на которые поставили лайки найденные пользователи по пересечениям лайков
+        String inSql = String.join(",", Collections.nCopies(otherUserIds.size(), "?"));
+        List<Film> filmsFromUser2 = findMany(String.format(FIND_LIKE_FILMS_FROM_USERS_QUERY, inSql), otherUserIds.toArray());
+
+        // уберем из списка фильмов найденного пользователя общие фильмы заданного пользователя и вернем результат
+        filmsFromUser2.removeAll(filmsFromUser1);
+        return filmsFromUser2;
     }
 
     /**

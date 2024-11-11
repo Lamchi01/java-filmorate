@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.*;
+import ru.yandex.practicum.filmorate.storage.db.FilmDbStorage;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -25,6 +26,7 @@ public class FilmService {
     private final DirectorStorage directorStorage;
     private final BaseStorage<Mpa> mpaStorage;
     private final EventService eventService;
+    private final FilmDbStorage filmDbStorage;
 
     /**
      * Поиск всех фильмов с маппингом жанров
@@ -139,5 +141,10 @@ public class FilmService {
     public List<Film> findFilms(String query, String by) {
         log.trace("Получен запрос на поиск фильмов. Строка поиска = {}", query);
         return filmStorage.findFilms(query, by);
+    }
+
+    public List<Film> getRecommendation(long userId) {
+        log.trace("Получен запрос на список рекомендованных фильмов для пользователя с ID {}", userId);
+        return filmDbStorage.getRecommendation(userId);
     }
 }
