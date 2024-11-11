@@ -11,8 +11,9 @@ import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import java.util.Collection;
 import java.util.List;
 
-import static ru.yandex.practicum.filmorate.model.Event.EventType.*;
-import static ru.yandex.practicum.filmorate.model.Event.Operation.*;
+import static ru.yandex.practicum.filmorate.model.Event.EventType.FRIEND;
+import static ru.yandex.practicum.filmorate.model.Event.Operation.ADD;
+import static ru.yandex.practicum.filmorate.model.Event.Operation.REMOVE;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -31,7 +32,7 @@ public class UserService {
     }
 
     public User create(User user) {
-        if (user.getName() == null) {
+        if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
             log.debug("Пустое имя пользователя с ID: {} заменено логином", user.getId());
         }
@@ -58,11 +59,7 @@ public class UserService {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
         friendStorage.addFriend(user, friend);
-        eventService.addEvent(
-                userId,
-                FRIEND,
-                ADD,
-                friendId);
+        eventService.addEvent(userId, FRIEND, ADD, friendId);
         return user;
     }
 
@@ -70,12 +67,7 @@ public class UserService {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
         friendStorage.deleteFriend(user, friend);
-        eventService.addEvent(
-                userId,
-                FRIEND,
-                REMOVE,
-                friendId
-        );
+        eventService.addEvent(userId, FRIEND, REMOVE, friendId);
         return user;
     }
 

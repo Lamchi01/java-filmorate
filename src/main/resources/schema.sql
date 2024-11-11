@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS reviews
     is_positive BOOL,
     user_id     BIGINT NOT NULL,
     film_id     BIGINT NOT NULL,
-    useful      BIGINT,
+    useful      BIGINT NOT NULL,
     CONSTRAINT users_fk_1
         FOREIGN KEY (user_id) REFERENCES users ON DELETE CASCADE,
     CONSTRAINT films_fk_2

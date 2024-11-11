@@ -96,12 +96,7 @@ public class FilmService {
         User user = userStorage.findById(userId);
         likeStorage.likeFilm(film, user);
         log.trace("Добавлен лайк к фильму с ID: {} пользователем с ID: {}", filmId, userId);
-        eventService.addEvent(
-                userId,
-                LIKE,
-                ADD,
-                filmId
-        );
+        eventService.addEvent(userId, LIKE, ADD, filmId);
         return film;
     }
 
@@ -110,12 +105,7 @@ public class FilmService {
         User user = userStorage.findById(userId);
         likeStorage.deleteLike(film, user);
         log.trace("Удален лайк к фильму с ID: {} пользователя с ID: {}", filmId, userId);
-        eventService.addEvent(
-                userId,
-                LIKE,
-                REMOVE,
-                filmId
-        );
+        eventService.addEvent(userId, LIKE, REMOVE, filmId);
         return film;
     }
 
@@ -126,6 +116,7 @@ public class FilmService {
 
     public List<Film> findFilmsByDirectorId(long directorId, String sortedBy) {
         log.trace("Получен запрос на получение фильмов режиссёра с ID = {}", directorId);
+        directorStorage.findById(directorId);
         return filmStorage.findFilmsByDirectorId(directorId, sortedBy);
     }
 
@@ -144,6 +135,7 @@ public class FilmService {
     }
 
     public List<Film> getRecommendation(long userId) {
+        userStorage.findById(userId);
         log.trace("Получен запрос на список рекомендованных фильмов для пользователя с ID {}", userId);
         return filmDbStorage.getRecommendation(userId);
     }

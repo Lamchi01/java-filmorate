@@ -22,20 +22,20 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     private static final String FIND_BY_ID_QUERY = "SELECT f.*, m.name mpa_name FROM films f " +
             "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE f.film_id = ?";
     private static final String FIND_BY_NAME_QUERY = "SELECT f.*, m.name mpa_name FROM films f " +
-            "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE f.name like ?";
+            "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE LOWER(f.name) like LOWER(?)";
     private static final String FIND_BY_DIRECTOR_ID_QUERY = "SELECT f.*, m.name mpa_name FROM films f " +
             "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE film_id IN " +
             "(SELECT film_id FROM film_directors WHERE director_id = ?)";
     private static final String FIND_BY_DIRECTOR_NAME_QUERY = "SELECT f.*, m.name mpa_name FROM films f " +
             "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE film_id IN " +
             "(SELECT fd.film_id FROM film_directors fd " +
-            "LEFT JOIN directors d ON fd.director_id = d.director_id" +
-            " WHERE d.name like ?)";
+            "LEFT JOIN directors d ON fd.director_id = d.director_id " +
+            "WHERE LOWER(d.name) like LOWER(?))";
     private static final String FIND_BY_DIRECTOR_NAME_AND_FILM_NAME_QUERY = "SELECT f.*, m.name mpa_name FROM films f " +
             "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE film_id IN " +
             "(SELECT fd.film_id FROM film_directors fd " +
             "LEFT JOIN directors d ON fd.director_id = d.director_id " +
-            " WHERE d.name like ?) and f.name like ?";
+            "WHERE LOWER(d.name) like LOWER(?)) and LOWER(f.name) like LOWER(?)";
     private static final String INSERT_QUERY = "INSERT INTO films (name, description, release_date, duration, mpa_id) " +
             "VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE films " +
@@ -274,7 +274,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
                 film.setDirectors(new LinkedHashSet<>(directors.get(film.getId())));
             }
         }
-        return films.stream().sorted(Comparator.comparing(Film::getCountLikes)).toList();
+        return films.stream().sorted(Comparator.comparing(Film::getCountLikes, Comparator.reverseOrder())).toList();
     }
 
     /**
@@ -302,6 +302,19 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
 
         // уберем из списка фильмов найденного пользователя общие фильмы заданного пользователя и вернем результат
         filmsFromUser2.removeAll(filmsFromUser1);
+
+        Map<Long, LinkedHashSet<Genre>> genres = getFilmsGenres(filmsFromUser2);
+        Map<Long, LinkedHashSet<Director>> directors = getFilmsDirectors(filmsFromUser2);
+
+        for (Film film : filmsFromUser2) {
+            if (genres.containsKey(film.getId())) {
+                film.setGenres(new LinkedHashSet<>(genres.get(film.getId())));
+            }
+            if (directors.containsKey(film.getId())) {
+                film.setDirectors(new LinkedHashSet<>(directors.get(film.getId())));
+            }
+        }
+
         return filmsFromUser2;
     }
 
@@ -386,7 +399,6 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
                     return res;
                 });
     }
-
 
     @Override
     public void deleteById(long id) {

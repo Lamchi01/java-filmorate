@@ -14,17 +14,16 @@ import java.util.List;
 @Slf4j
 @Repository
 public class ReviewDbStorage extends BaseDbStorage<Review> implements ReviewStorage {
-    private static final String FIND_ALL_QUERY = "SELECT * FROM reviews";
-    private static final String FIND_BY_ID_QUERY = "SELECT * FROM reviews WHERE review_id = ?";
-    private static final String FIND_BY_FILM_ID_QUERY = "SELECT * FROM reviews WHERE film_id = ? LIMIT ?";
+    private static final String FIND_ALL_QUERY = "SELECT * FROM reviews ORDER BY useful DESC";
+    private static final String FIND_BY_ID_QUERY = "SELECT * FROM reviews WHERE review_id = ? ORDER BY useful DESC";
+    private static final String FIND_BY_FILM_ID_QUERY = "SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
     private static final String INSERT_QUERY = "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) " +
             "VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE reviews " +
-            "SET content = ?, is_positive = ?, user_id = ?, film_id = ?, useful = ? WHERE review_id = ?";
+            "SET content = ?, is_positive = ?, useful = ? WHERE review_id = ?";
     private static final String DELETE_ALL_QUERY = "DELETE FROM reviews";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM reviews WHERE review_id = ?";
-    private static final String UPDATE_REVIEW_LIKE_QUERY = "MERGE INTO reviews_likes (review_id, user_id, is_like)" +
-            "VALUES (?, ?, ?)";
+    private static final String UPDATE_REVIEW_LIKE_QUERY = "MERGE INTO reviews_likes (review_id, user_id, is_like) VALUES (?, ?, ?)";
     private static final String DELETE_REVIEW_LIKE_QUERY = "DELETE FROM reviews_likes " +
             "WHERE review_id = ? AND user_id = ? AND is_like = ?";
     private static final String FIND_REVIEW_USEFUL_QUERY = "SELECT SUM(CASE WHEN is_like = TRUE THEN 1 ELSE -1 END) useful " +
@@ -56,9 +55,9 @@ public class ReviewDbStorage extends BaseDbStorage<Review> implements ReviewStor
 
     @Override
     public Review update(Review review) {
-        update(UPDATE_QUERY, review.getContent(), review.getIsPositive(), review.getUserId(), review.getFilmId(), review.getUseful(), review.getReviewId());
+        update(UPDATE_QUERY, review.getContent(), review.getIsPositive(), review.getUseful(), review.getReviewId());
         log.trace("Обновлен отзыв с ID: {}", review.getReviewId());
-        return review;
+        return findById(review.getReviewId());
     }
 
     @Override
@@ -108,12 +107,13 @@ public class ReviewDbStorage extends BaseDbStorage<Review> implements ReviewStor
     }
 
     private void updateReviewUseful(Review review) {
-        Long useful = jdbc.queryForObject(FIND_REVIEW_USEFUL_QUERY, Long.class, review.getReviewId());
-        if (useful == null) useful = 0L;
-        if (!useful.equals(review.getUseful())) {
-            review.setUseful(useful);
-            update(review);
-            log.trace("Обновлен рейтинг полезности на отзыв с ID: {}", review.getReviewId());
+        List<Long> useful = jdbc.queryForList(FIND_REVIEW_USEFUL_QUERY, Long.class, review.getReviewId());
+        if (useful.isEmpty() || useful.getFirst() == null) {
+            review.setUseful(0L);
+        } else {
+            review.setUseful(useful.getFirst());
         }
+        update(review);
+        log.trace("Обновлен рейтинг полезности на отзыв с ID: {}", review.getReviewId());
     }
 }
