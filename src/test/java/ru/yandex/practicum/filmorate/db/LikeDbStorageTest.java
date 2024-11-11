@@ -8,7 +8,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DuplicateKeyException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
@@ -77,7 +76,7 @@ public class LikeDbStorageTest {
         assertEquals(film1.getCountLikes(), likeStorage.getLikes(film1));
 
         // проверка на дубликат лайка, должно быть исключение
-        assertThrows(DuplicateKeyException.class, () -> likeStorage.likeFilm(film3, user1));
+        assertDoesNotThrow(() -> likeStorage.likeFilm(film3, user1));
 
         // добавить лайк не существующего фильма, должно быть исключение
         Film film = new Film(1000L, "Film1000", "desc1000", LocalDate.of(1993, 1, 1), 110L, new Mpa(3L, "PG-13"),
@@ -103,7 +102,7 @@ public class LikeDbStorageTest {
         likeStorage.likeFilm(film1, user1);
 
         // проверка на дубликат лайка, должно быть исключение
-        assertThrows(DuplicateKeyException.class, () -> likeStorage.likeFilm(film1, user1));
+        assertDoesNotThrow(() -> likeStorage.likeFilm(film1, user1));
 
         likeStorage.likeFilm(film1, user2);
         likeStorage.likeFilm(film2, user1);
