@@ -22,8 +22,16 @@ public class EventDbStorage extends BaseDbStorage<Event> implements EventStorage
         super(jdbc, mapper);
     }
 
-    public void addEvent(Event event) {
-        log.info("Добавление события, пользователь с ID {}, тип события {}", event.getUserId(), event.getEventType());
+    @Override
+    public void addEvent(long userId, Event.EventType eventType, Event.Operation operation, long entityId) {
+        log.info("Добавление события, пользователь с ID {}, тип события {}", userId, eventType);
+        Event event = Event.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .userId(userId)
+                .eventType(eventType)
+                .operation(operation)
+                .entityId(entityId)
+                .build();
         insert(
                 ADD_QUERY,
                 Timestamp.from(Instant.ofEpochMilli(event.getTimestamp())),
@@ -32,6 +40,7 @@ public class EventDbStorage extends BaseDbStorage<Event> implements EventStorage
                 event.getOperation().toString(),
                 event.getEntityId()
         );
+        log.info("Создано событие - {}", event);
     }
 
     public List<Event> getEvents(long id) {
