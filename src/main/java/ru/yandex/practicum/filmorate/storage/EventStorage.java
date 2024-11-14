@@ -2,10 +2,10 @@ package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Event;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface EventStorage {
     void addEvent(Event event);
 
-    Collection<Event> getEvents(long id);
+    List<Event> getEvents(long id);
 }

@@ -20,20 +20,19 @@ public class UserDbStorage extends BaseDbStorage<User> implements BaseStorage<Us
     private static final String DELETE_ALL_QUERY = "DELETE FROM users";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM users WHERE user_id = ?";
 
-
     public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
     }
 
     @Override
     public List<User> findAll() {
-        log.info("Получен запрос на получение всех пользователей");
+        log.info("Получение всех пользователей");
         return findMany(FIND_ALL_QUERY);
     }
 
     @Override
     public User findById(Long id) {
-        log.info("Получен запрос на получение пользовтале с IDL {}", id);
+        log.info("Получение пользователя с IDL {}", id);
         User user = findOne(FIND_BY_ID_QUERY, id).orElseThrow(() -> new NotFoundException("User with ID " + id + " not found"));
         if (user == null) {
             log.warn("Пользователь с ID: {} не найден", id);
@@ -44,31 +43,30 @@ public class UserDbStorage extends BaseDbStorage<User> implements BaseStorage<Us
 
     @Override
     public User create(User user) {
+        log.info("Добавление нового пользователя с ID: {}", user.getId());
         long id = insert(INSERT_QUERY, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
         user.setId(id);
-        log.info("Добавлен новый пользователь с ID: {}", user.getId());
         return user;
     }
 
     @Override
     public User update(User user) {
+        log.info("Обновление пользователя с ID: {}", user.getId());
         update(UPDATE_QUERY, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), user.getId());
-        log.info("Обновлен пользователь с ID: {}", user.getId());
         return user;
     }
 
     @Override
     public void deleteAll() {
+        log.info("Удаление всех пользователей");
         removeAll(DELETE_ALL_QUERY);
-        log.info("Удалены все пользователи");
     }
-
 
     @Override
     public void deleteById(long id) {
+        log.info("Удаление пользователя с ID: {}", id);
         if (!removeOne(DELETE_BY_ID_QUERY, id)) {
             throw new NotFoundException("Пользователь с ID " + id + " не найден.");
         }
-        log.info("Пользователь с ID: {} успешно удалён", id);
     }
 }

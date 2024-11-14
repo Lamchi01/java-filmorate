@@ -35,78 +35,64 @@ public class ReviewDbStorage extends BaseDbStorage<Review> implements ReviewStor
 
     @Override
     public List<Review> findAll() {
-        log.info("Получен запрос на получение всех отзывов");
+        log.info("Получение всех отзывов");
         return findMany(FIND_ALL_QUERY);
     }
 
     @Override
     public Review findById(Long id) {
-        log.info("Получен запрос на получение отзыва с ID: {}", id);
+        log.info("Получение отзыва с ID: {}", id);
         return findOne(FIND_BY_ID_QUERY, id).orElseThrow(() -> new NotFoundException("Review with ID " + id + " not found"));
     }
 
     @Override
     public Review create(Review review) {
+        log.info("Добавление нового отзывы");
         long id = insert(INSERT_QUERY, review.getContent(), review.getIsPositive(), review.getUserId(), review.getFilmId(), review.getUseful());
         review.setReviewId(id);
-        log.info("Добавлен новый отзыв с ID: {}", review.getReviewId());
         return review;
     }
 
     @Override
     public Review update(Review review) {
+        log.info("Обновление отзывы с ID: {}", review.getReviewId());
         update(UPDATE_QUERY, review.getContent(), review.getIsPositive(), review.getUseful(), review.getReviewId());
-        log.info("Обновлен отзыв с ID: {}", review.getReviewId());
         return findById(review.getReviewId());
     }
 
     @Override
     public void deleteAll() {
+        log.info("Удаление всех отзывов");
         removeAll(DELETE_ALL_QUERY);
-        log.info("Удалены все отзывы");
     }
 
     @Override
     public void deleteById(long id) {
+        log.info("Удаление отзыва с ID: {}", id);
         removeOne(DELETE_BY_ID_QUERY, id);
-        log.info("Удален отзыв с ID: {}", id);
     }
 
     @Override
     public List<Review> findByFilmId(Long filmId, Long count) {
-        log.info("Получен запрос на получение отзывов фильма с ID {}", filmId);
+        log.info("Получение отзывов фильма с ID {}", filmId);
         return findMany(FIND_BY_FILM_ID_QUERY, filmId, count);
     }
 
     @Override
-    public void likeReview(Review review, User user) {
-        update(UPDATE_REVIEW_LIKE_QUERY, review.getReviewId(), review.getUserId(), Boolean.TRUE);
-        log.info("Добавлен лайк на отзыв с ID: {}", review.getReviewId());
-        updateReviewUseful(review);
+    public void likeDislikeReview(Review review, User user, boolean isLike) {
+        log.info("Добавление {} на отзыв с ID: {}", isLike ? "лайк" : "дизлайк", review.getReviewId());
+        update(UPDATE_REVIEW_LIKE_QUERY, review.getReviewId(), review.getUserId(), isLike);
     }
 
     @Override
-    public void dislikeReview(Review review, User user) {
-        update(UPDATE_REVIEW_LIKE_QUERY, review.getReviewId(), review.getUserId(), Boolean.FALSE);
-        log.info("Добавлен дизлайк на отзыв с ID: {}", review.getReviewId());
-        updateReviewUseful(review);
+    public void deleteLikeDislikeReview(Review review, User user, boolean isLike) {
+        log.info("Удаление {} у отзыва с ID: {}", isLike ? "лайк" : "дизлайк", review.getReviewId());
+        removeOne(DELETE_REVIEW_LIKE_QUERY, review.getReviewId(), review.getUserId(), isLike);
     }
 
     @Override
-    public void deleteLikeReview(Review review, User user) {
-        removeOne(DELETE_REVIEW_LIKE_QUERY, review.getReviewId(), review.getUserId(), Boolean.TRUE);
-        log.info("Удален лайк у отзыва с ID: {}", review.getReviewId());
-        updateReviewUseful(review);
-    }
-
-    @Override
-    public void deleteDislikeReview(Review review, User user) {
-        removeOne(DELETE_REVIEW_LIKE_QUERY, review.getReviewId(), review.getUserId(), Boolean.FALSE);
-        log.info("Удален дизлайк у отзыва с ID: {}", review.getReviewId());
-        updateReviewUseful(review);
-    }
-
-    private void updateReviewUseful(Review review) {
+    public void updateReviewUseful(Review review) {
+        log.info("Обновление рейтинга полезности на отзыв с ID: {}", review.getReviewId());
         List<Long> useful = jdbc.queryForList(FIND_REVIEW_USEFUL_QUERY, Long.class, review.getReviewId());
         if (useful.isEmpty() || useful.getFirst() == null) {
             review.setUseful(0L);
@@ -114,6 +100,5 @@ public class ReviewDbStorage extends BaseDbStorage<Review> implements ReviewStor
             review.setUseful(useful.getFirst());
         }
         update(review);
-        log.info("Обновлен рейтинг полезности на отзыв с ID: {}", review.getReviewId());
     }
 }

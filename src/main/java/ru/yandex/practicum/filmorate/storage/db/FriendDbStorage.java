@@ -19,23 +19,23 @@ public class FriendDbStorage implements FriendStorage {
 
     @Override
     public void addFriend(User user, User friend) {
+        log.info("Добавление пользователю с ID {} друга с ID {}", user.getId(), friend.getId());
         if (user.equals(friend)) {
             throw new WrongRequestException("Попытка добавить друга самого себя");
         }
 
         jdbc.update("INSERT INTO friends (user_id, friend_id) VALUES (?, ?)", user.getId(), friend.getId());
-        log.info("Пользователю с ID {} добавлен друг с ID {}", user.getId(), friend.getId());
     }
 
     @Override
     public void deleteFriend(User user, User friend) {
+        log.info("Удаление у пользователя с ID {} друга с ID {}", user.getId(), friend.getId());
         jdbc.update("DELETE FROM friends WHERE user_id = ? AND friend_id = ?", user.getId(), friend.getId());
-        log.info("У пользователя с ID {} удален друг с ID {}", user.getId(), friend.getId());
     }
 
     @Override
     public List<User> getFriends(User user) {
-        log.info("Получен запрос на получение всех друзей пользователя с ID {}", user.getId());
+        log.info("Получение всех друзей пользователя с ID {}", user.getId());
         return jdbc.query("SELECT u.* FROM users u " +
                         "WHERE u.user_id IN (SELECT friend_id FROM friends f WHERE f.user_id = ?)",
                 new UserRowMapper(), user.getId());
@@ -43,10 +43,10 @@ public class FriendDbStorage implements FriendStorage {
 
     @Override
     public List<User> getCommonFriends(User user, User other) {
+        log.info("Получение общий друзей пользователей с ID {} и ID {}", user.getId(), other.getId());
         String sql = "SELECT * FROM users WHERE user_id " +
                 "IN (SELECT friend_id FROM friends WHERE user_id = ?) " +
                 "AND user_id IN (SELECT friend_id FROM friends WHERE user_id = ?)";
-        log.info("Получен запрос на получение общий друзей пользователей с ID {} и ID {}", user.getId(), other.getId());
         return jdbc.query(sql, new UserRowMapper(), user.getId(), other.getId());
     }
 }

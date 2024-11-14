@@ -14,32 +14,39 @@ import java.util.List;
 public class DirectorService {
     private final DirectorStorage directorStorage;
 
-
     public List<Director> findAll() {
-        return directorStorage.findAll();
+        List<Director> directors = directorStorage.findAll();
+        log.info("Обработан запрос на получение всех режиссёров");
+        return directors;
     }
 
     public Director findById(Long id) {
-        return directorStorage.findById(id);
+        Director director = directorStorage.findById(id);
+        log.info("Обработан запрос на получение режиссёра с ID: {}", id);
+        return director;
     }
 
     public Director create(Director director) {
-        return directorStorage.create(director);
+        Director dir = directorStorage.create(director);
+        log.info("Добавлен новый режиссёр с ID: {}", director.getId());
+        return dir;
     }
 
     public Director update(Director director) {
         Director savedDirector = directorStorage.findById(director.getId());
         if (director.getName() != null) savedDirector.setName(director.getName());
-        directorStorage.update(director);
+        directorStorage.update(savedDirector);
+        log.info("Обновлен режиссёр с ID: {}", savedDirector.getId());
         return savedDirector;
     }
 
     public void deleteAll() {
         directorStorage.deleteAll();
+        log.info("Удалены все режиссёры");
     }
 
     public void deleteById(long id) {
         directorStorage.deleteById(id);
+        log.info("Режиссёр с ID: {} успешно удалён", id);
     }
-
 }

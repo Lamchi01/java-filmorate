@@ -9,7 +9,7 @@ import ru.yandex.practicum.filmorate.storage.EventStorage;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Repository
@@ -23,6 +23,7 @@ public class EventDbStorage extends BaseDbStorage<Event> implements EventStorage
     }
 
     public void addEvent(Event event) {
+        log.info("Добавление события, пользователь с ID {}, тип события {}", event.getUserId(), event.getEventType());
         insert(
                 ADD_QUERY,
                 Timestamp.from(Instant.ofEpochMilli(event.getTimestamp())),
@@ -33,7 +34,8 @@ public class EventDbStorage extends BaseDbStorage<Event> implements EventStorage
         );
     }
 
-    public Collection<Event> getEvents(long id) {
+    public List<Event> getEvents(long id) {
+        log.info("Получение событий по пользователю с ID {}", id);
         return findMany(FIND_ALL_EVENTS_BY_USER, id);
     }
 }

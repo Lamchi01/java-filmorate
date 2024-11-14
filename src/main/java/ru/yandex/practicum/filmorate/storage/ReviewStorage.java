@@ -9,11 +9,9 @@ public interface ReviewStorage extends BaseStorage<Review> {
 
     List<Review> findByFilmId(Long filmId, Long count);
 
-    void likeReview(Review review, User user);
+    void likeDislikeReview(Review review, User user, boolean isLike);
 
-    void dislikeReview(Review review, User user);
+    void deleteLikeDislikeReview(Review review, User user, boolean isLike);
 
-    void deleteLikeReview(Review review, User user);
-
-    void deleteDislikeReview(Review review, User user);
+    void updateReviewUseful(Review review);
 }

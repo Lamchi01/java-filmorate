@@ -23,20 +23,21 @@ public class LikeDbStorage implements LikeStorage {
 
     @Override
     public void likeFilm(Film film, User user) {
+        log.info("Создание лайка пользователя с ID {} к фильму с ID {}", user.getId(), film.getId());
         jdbc.update(ADD_LIKE_QUERY, film.getId(), user.getId());
         updateCountLikes(film);
-        log.info("Пользователь с ID {} поставил лайк фильму с ID {}", user.getId(), film.getId());
     }
 
     @Override
     public void deleteLike(Film film, User user) {
+        log.info("Удаление лайка пользователя с ID {} к фильму с ID {}", user.getId(), film.getId());
         jdbc.update(DELETE_LIKE_QUERY, film.getId(), user.getId());
         updateCountLikes(film);
-        log.info("Удален лайк пользователя с ID {} к фильму с ID {}", user.getId(), film.getId());
     }
 
     @Override
     public long getLikes(Film film) {
+        log.info("Получение лаков к фильму с ID {}", film.getId());
         List<Long> likes = jdbc.queryForList(FIND_COUNT_LIKES_BY_ID_QUERY, Long.class, film.getId());
         if (likes.isEmpty()) {
             return 0L;

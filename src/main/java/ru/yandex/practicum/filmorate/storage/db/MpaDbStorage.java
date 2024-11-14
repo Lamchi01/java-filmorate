@@ -18,43 +18,45 @@ public class MpaDbStorage extends BaseDbStorage<Mpa> implements BaseStorage<Mpa>
     private static final String INSERT_QUERY = "INSERT INTO mpa(name) VALUES (?)";
     private static final String UPDATE_QUERY = "UPDATE mpa SET name = ? WHERE mpa_id = ?";
     private static final String DELETE_ALL_QUERY = "DELETE FROM mpa";
+    private static final String DELETE_BY_ID_QUERY = "DELETE FROM mpa WHERE mpa_id = ?";
 
     public MpaDbStorage(JdbcTemplate jdbc, RowMapper<Mpa> mapper) {
         super(jdbc, mapper);
     }
 
     public List<Mpa> findAll() {
-        log.info("Получен запрос на получение всех рейтингов MPA");
+        log.info("Получение всех рейтингов MPA");
         return findMany(FIND_ALL_QUERY);
     }
 
     public Mpa findById(Long id) {
-        log.info("Получен запрос на получение рейтинга MPA с ID: {}", id);
+        log.info("Получение рейтинга MPA с ID: {}", id);
         return findOne(FIND_BY_ID_QUERY, id).orElseThrow(() -> new NotFoundException("MPA with id " + id + " not found"));
     }
 
     @Override
     public Mpa update(Mpa mpa) {
+        log.info("Обновление рейтинга MPA с ID: {}", mpa.getId());
         update(UPDATE_QUERY, mpa.getName(), mpa.getId());
-        log.info("Обновлен рейтинг MPA с ID: {}", mpa.getId());
         return mpa;
     }
 
     @Override
     public void deleteAll() {
+        log.info("Удаление всех рейтингов MPA");
         removeAll(DELETE_ALL_QUERY);
-        log.info("Удалены все рейтинги MPA");
     }
 
     @Override
     public void deleteById(long id) {
-
+        log.info("Удаление рейтинга с ID {}", id);
+        removeOne(DELETE_BY_ID_QUERY, id);
     }
 
     public Mpa create(Mpa mpa) {
+        log.info("Добавление нового рейтинга MPA");
         long id = insert(INSERT_QUERY, mpa.getName());
         mpa.setId(id);
-        log.info("Добавлен новый рейтинг MPA с ID: {}", mpa.getId());
         return mpa;
     }
 }
