@@ -9,4 +9,6 @@ public interface LikeStorage {
     void deleteLike(Film film, User user);
 
     long getLikes(Film film);
+
+    void updateCountLikes(Film film);
 }

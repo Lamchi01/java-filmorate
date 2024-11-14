@@ -27,7 +27,7 @@ public class GenreService {
     }
 
     public Genre create(Genre genre) {
-        Genre gen = genreStorage.create(genre) ;
+        Genre gen = genreStorage.create(genre);
         log.info("Создан жанр с ID {}", gen.getId());
         return gen;
     }
