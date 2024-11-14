@@ -35,13 +35,13 @@ public class ReviewDbStorage extends BaseDbStorage<Review> implements ReviewStor
 
     @Override
     public List<Review> findAll() {
-        log.trace("Получен запрос на получение всех отзывов");
+        log.info("Получен запрос на получение всех отзывов");
         return findMany(FIND_ALL_QUERY);
     }
 
     @Override
     public Review findById(Long id) {
-        log.trace("Получен запрос на получение отзыва с ID: {}", id);
+        log.info("Получен запрос на получение отзыва с ID: {}", id);
         return findOne(FIND_BY_ID_QUERY, id).orElseThrow(() -> new NotFoundException("Review with ID " + id + " not found"));
     }
 
@@ -49,60 +49,60 @@ public class ReviewDbStorage extends BaseDbStorage<Review> implements ReviewStor
     public Review create(Review review) {
         long id = insert(INSERT_QUERY, review.getContent(), review.getIsPositive(), review.getUserId(), review.getFilmId(), review.getUseful());
         review.setReviewId(id);
-        log.trace("Добавлен новый отзыв с ID: {}", review.getReviewId());
+        log.info("Добавлен новый отзыв с ID: {}", review.getReviewId());
         return review;
     }
 
     @Override
     public Review update(Review review) {
         update(UPDATE_QUERY, review.getContent(), review.getIsPositive(), review.getUseful(), review.getReviewId());
-        log.trace("Обновлен отзыв с ID: {}", review.getReviewId());
+        log.info("Обновлен отзыв с ID: {}", review.getReviewId());
         return findById(review.getReviewId());
     }
 
     @Override
     public void deleteAll() {
         removeAll(DELETE_ALL_QUERY);
-        log.trace("Удалены все отзывы");
+        log.info("Удалены все отзывы");
     }
 
     @Override
     public void deleteById(long id) {
         removeOne(DELETE_BY_ID_QUERY, id);
-        log.trace("Удален отзыв с ID: {}", id);
+        log.info("Удален отзыв с ID: {}", id);
     }
 
     @Override
     public List<Review> findByFilmId(Long filmId, Long count) {
-        log.trace("Получен запрос на получение отзывов фильма с ID {}", filmId);
+        log.info("Получен запрос на получение отзывов фильма с ID {}", filmId);
         return findMany(FIND_BY_FILM_ID_QUERY, filmId, count);
     }
 
     @Override
     public void likeReview(Review review, User user) {
         update(UPDATE_REVIEW_LIKE_QUERY, review.getReviewId(), review.getUserId(), Boolean.TRUE);
-        log.trace("Добавлен лайк на отзыв с ID: {}", review.getReviewId());
+        log.info("Добавлен лайк на отзыв с ID: {}", review.getReviewId());
         updateReviewUseful(review);
     }
 
     @Override
     public void dislikeReview(Review review, User user) {
         update(UPDATE_REVIEW_LIKE_QUERY, review.getReviewId(), review.getUserId(), Boolean.FALSE);
-        log.trace("Добавлен дизлайк на отзыв с ID: {}", review.getReviewId());
+        log.info("Добавлен дизлайк на отзыв с ID: {}", review.getReviewId());
         updateReviewUseful(review);
     }
 
     @Override
     public void deleteLikeReview(Review review, User user) {
         removeOne(DELETE_REVIEW_LIKE_QUERY, review.getReviewId(), review.getUserId(), Boolean.TRUE);
-        log.trace("Удален лайк у отзыва с ID: {}", review.getReviewId());
+        log.info("Удален лайк у отзыва с ID: {}", review.getReviewId());
         updateReviewUseful(review);
     }
 
     @Override
     public void deleteDislikeReview(Review review, User user) {
         removeOne(DELETE_REVIEW_LIKE_QUERY, review.getReviewId(), review.getUserId(), Boolean.FALSE);
-        log.trace("Удален дизлайк у отзыва с ID: {}", review.getReviewId());
+        log.info("Удален дизлайк у отзыва с ID: {}", review.getReviewId());
         updateReviewUseful(review);
     }
 
@@ -114,6 +114,6 @@ public class ReviewDbStorage extends BaseDbStorage<Review> implements ReviewStor
             review.setUseful(useful.getFirst());
         }
         update(review);
-        log.trace("Обновлен рейтинг полезности на отзыв с ID: {}", review.getReviewId());
+        log.info("Обновлен рейтинг полезности на отзыв с ID: {}", review.getReviewId());
     }
 }

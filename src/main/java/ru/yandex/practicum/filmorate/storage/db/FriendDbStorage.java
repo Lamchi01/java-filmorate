@@ -24,18 +24,18 @@ public class FriendDbStorage implements FriendStorage {
         }
 
         jdbc.update("INSERT INTO friends (user_id, friend_id) VALUES (?, ?)", user.getId(), friend.getId());
-        log.trace("Пользователю с ID {} добавлен друг с ID {}", user.getId(), friend.getId());
+        log.info("Пользователю с ID {} добавлен друг с ID {}", user.getId(), friend.getId());
     }
 
     @Override
     public void deleteFriend(User user, User friend) {
         jdbc.update("DELETE FROM friends WHERE user_id = ? AND friend_id = ?", user.getId(), friend.getId());
-        log.trace("У пользователя с ID {} удален друг с ID {}", user.getId(), friend.getId());
+        log.info("У пользователя с ID {} удален друг с ID {}", user.getId(), friend.getId());
     }
 
     @Override
     public List<User> getFriends(User user) {
-        log.trace("Получен запрос на получение всех друзей пользователя с ID {}", user.getId());
+        log.info("Получен запрос на получение всех друзей пользователя с ID {}", user.getId());
         return jdbc.query("SELECT u.* FROM users u " +
                         "WHERE u.user_id IN (SELECT friend_id FROM friends f WHERE f.user_id = ?)",
                 new UserRowMapper(), user.getId());
@@ -46,7 +46,7 @@ public class FriendDbStorage implements FriendStorage {
         String sql = "SELECT * FROM users WHERE user_id " +
                 "IN (SELECT friend_id FROM friends WHERE user_id = ?) " +
                 "AND user_id IN (SELECT friend_id FROM friends WHERE user_id = ?)";
-        log.trace("Получен запрос на получение общий друзей пользователей с ID {} и ID {}", user.getId(), other.getId());
+        log.info("Получен запрос на получение общий друзей пользователей с ID {} и ID {}", user.getId(), other.getId());
         return jdbc.query(sql, new UserRowMapper(), user.getId(), other.getId());
     }
 }
