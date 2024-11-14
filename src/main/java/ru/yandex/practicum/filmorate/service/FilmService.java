@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.*;
-import ru.yandex.practicum.filmorate.storage.db.FilmDbStorage;
 
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static ru.yandex.practicum.filmorate.model.Event.EventType.LIKE;
 import static ru.yandex.practicum.filmorate.model.Event.Operation.ADD;
@@ -102,6 +104,7 @@ public class FilmService {
         User user = userStorage.findById(userId);
         likeStorage.likeFilm(film, user);
         log.info("Добавлен лайк к фильму с ID: {} пользователем с ID: {}", filmId, userId);
+        likeStorage.updateCountLikes(film);
         eventStorage.addEvent(userId, LIKE, ADD, filmId);
         return film;
     }
@@ -111,6 +114,7 @@ public class FilmService {
         User user = userStorage.findById(userId);
         likeStorage.deleteLike(film, user);
         log.info("Удален лайк к фильму с ID: {} пользователя с ID: {}", filmId, userId);
+        likeStorage.updateCountLikes(film);
         eventStorage.addEvent(userId, LIKE, REMOVE, filmId);
         return film;
     }
