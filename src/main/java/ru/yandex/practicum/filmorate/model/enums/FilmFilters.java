@@ -4,17 +4,12 @@ public enum FilmFilters {
     DIRECTOR, TITLE, DIRECTOR_AND_TITLE, TITLE_AND_DIRECTOR;
 
     public static FilmFilters from(String by) {
-        switch (by.toLowerCase()) {
-            case "director":
-                return DIRECTOR;
-            case "title":
-                return TITLE;
-            case "director,title":
-                return DIRECTOR_AND_TITLE;
-            case "title,director":
-                return TITLE_AND_DIRECTOR;
-            default:
-                return null;
-        }
+        return switch (by.toLowerCase()) {
+            case "director" -> DIRECTOR;
+            case "title" -> TITLE;
+            case "director,title" -> DIRECTOR_AND_TITLE;
+            case "title,director" -> TITLE_AND_DIRECTOR;
+            default -> null;
+        };
     }
 }

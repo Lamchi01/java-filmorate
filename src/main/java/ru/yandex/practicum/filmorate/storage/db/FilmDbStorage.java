@@ -90,40 +90,40 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
 
     @Override
     public List<Film> findAll() {
-        log.info("Получен запрос на получение всех фильмов");
-        List<Film> films = findMany(FIND_ALL_QUERY);
-        return films;
+        log.info("Получение всех фильмов");
+        return findMany(FIND_ALL_QUERY);
     }
 
     @Override
     public Film findById(Long id) {
-        log.info("Получен запрос на получение фильма с ID: {}", id);
+        log.info("Получение фильма с ID: {}", id);
         return findOne(FIND_BY_ID_QUERY, id).orElseThrow(() -> new NotFoundException("User with ID " + id + " not found"));
     }
 
     @Override
     public Film create(Film film) {
+        log.info("Добавление нового фильма");
         long id = insert(INSERT_QUERY, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId());
         film.setId(id);
-        log.info("Добавлен новый фильм с ID: {}", film.getId());
         return film;
     }
 
     @Override
     public Film update(Film film) {
+        log.info("Обновление фильма с ID: {}", film.getId());
         update(UPDATE_QUERY, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId(), film.getId());
-        log.info("Обновлен фильм с ID: {}", film.getId());
         return film;
     }
 
     @Override
     public void deleteAll() {
+        log.info("Удаление всех фильмов");
         removeAll(DELETE_ALL_QUERY);
-        log.info("Удалены все фильмы");
     }
 
     @Override
     public List<Film> getPopularFilms(int count, Long genreId, Integer year) {
+        log.info("Получение популярных фильмов");
         StringBuilder sql = new StringBuilder(BASE_POPULAR_QUERY);
 
         sql.append(genreId != null ? GENRE_JOIN_CONDITION : "");
@@ -139,12 +139,9 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
 
         sql.append(GROUP_BY_ORDER_CONDITION);
 
-
         Object[] params = buildParamsArray(genreId, year, count);
 
-        log.info("Запрос на популярные фильмы: {}", sql);
-        List<Film> films = findMany(sql.toString(), params);
-        return films;
+        return findMany(sql.toString(), params);
     }
 
     private Object[] buildParamsArray(Long genreId, Integer year, int count) {
@@ -172,12 +169,13 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
 
     @Override
     public List<Film> findCommonFilms(long userId, long friendId) {
-        List<Film> films = findMany(FIND_COMMON_FILMS, userId, friendId);
-        return films;
+        log.info("Получение общих фильмов пользователей с ID {} и ID {}", userId, friendId);
+        return findMany(FIND_COMMON_FILMS, userId, friendId);
     }
 
     @Override
     public List<Film> findFilms(String query, String by) {
+        log.info("Получение фильмов по запросу {}, {}", query, by);
         List<Film> films = new ArrayList<>();
         String[] queryParts = query.split(",");
         String[] byParts = by.split(",");
@@ -210,7 +208,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             } else if (titleQuery == null && directorQuery != null) {
                 films = findMany(FIND_BY_DIRECTOR_NAME_QUERY, "%" + directorQuery + "%");
                 films.addAll(films = findMany(FIND_BY_NAME_QUERY, "%" + queryParts[0] + "%"));
-            } else if (directorQuery != null && titleQuery != null) {
+            } else if (directorQuery != null) {
                 films = findMany(FIND_BY_DIRECTOR_NAME_AND_FILM_NAME_QUERY, "%" + directorQuery + "%", "%" + titleQuery + "%");
             }
         } else {
@@ -228,6 +226,8 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
      */
     @Override
     public List<Film> getRecommendation(long id) {
+        log.info("Получение списка рекомендованных фильмов для пользователя с ID {}", id);
+
         // получим список пользователей, у которых максимальное пересечение по лайкам с заданным
         // последний параметр запроса - ограничение выборки
         List<Long> otherUserIds = jdbc.queryForList(FIND_INTERSECTION_LIKES_QUERY, Long.class, id, id, 1);
@@ -246,18 +246,6 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         // уберем из списка фильмов найденного пользователя общие фильмы заданного пользователя и вернем результат
         filmsFromUser2.removeAll(filmsFromUser1);
 
-        Map<Long, LinkedHashSet<Genre>> genres = getFilmsGenres(filmsFromUser2);
-        Map<Long, LinkedHashSet<Director>> directors = getFilmsDirectors(filmsFromUser2);
-
-        for (Film film : filmsFromUser2) {
-            if (genres.containsKey(film.getId())) {
-                film.setGenres(new LinkedHashSet<>(genres.get(film.getId())));
-            }
-            if (directors.containsKey(film.getId())) {
-                film.setDirectors(new LinkedHashSet<>(directors.get(film.getId())));
-            }
-        }
-
         return filmsFromUser2;
     }
 
@@ -268,6 +256,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
      * @return - HashSet, ключ - ID фильма, значение - список жанров в виде объектов
      */
     public Map<Long, LinkedHashSet<Genre>> getFilmsGenres(List<Film> films) {
+        log.info("Получение жанров фильмов");
         Long[] filmIds = films.stream().map(Film::getId).toArray(Long[]::new);
         String inSql = String.join(",", Collections.nCopies(filmIds.length, "?"));
         Map<Long, LinkedHashSet<Genre>> res = new HashMap<>();
@@ -291,6 +280,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
      * @return - HashSet, ключ - ID фильма, значение - список режиссёров в виде объектов
      */
     public Map<Long, LinkedHashSet<Director>> getFilmsDirectors(List<Film> films) {
+        log.info("Получение режиссеров фильмов");
         Long[] filmIds = films.stream().map(Film::getId).toArray(Long[]::new);
         String inSql = String.join(",", Collections.nCopies(filmIds.length, "?"));
         Map<Long, LinkedHashSet<Director>> res = new HashMap<>();
@@ -309,10 +299,10 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
 
     @Override
     public void deleteById(long id) {
+        log.info("Удаление фильма с ID {}", id);
         if (!removeOne(DELETE_BY_ID_QUERY, id)) {
             throw new NotFoundException("Фильм с ID " + id + " не найден.");
         }
-        log.info("Фильм с ID: {} успешно удалён", id);
     }
 
     /**
@@ -321,6 +311,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
      * @return - HashSet, ключ- ID фильма, значение - список жанров в виде объектов
      */
     public Map<Long, LinkedHashSet<Genre>> getAllFilmGenres() {
+        log.info("Получение всех жанров");
         Map<Long, LinkedHashSet<Genre>> res = new HashMap<>();
         return jdbc.query(FIND_ALL_FILM_GENRES_QUERY, (ResultSet rs) -> {
             while (rs.next()) {
@@ -339,6 +330,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
      * @return - HashSet, ключ- ID фильма, значение - список режиссёров в виде объектов
      */
     public Map<Long, LinkedHashSet<Director>> getAllFilmDirectors() {
+        log.info("Получение всех режиссеров");
         Map<Long, LinkedHashSet<Director>> res = new HashMap<>();
         return jdbc.query(FIND_ALL_FILM_DIRECTORS_QUERY, (ResultSet rs) -> {
             while (rs.next()) {

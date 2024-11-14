@@ -24,27 +24,35 @@ public class ReviewService {
     private final EventService eventService;
 
     public List<Review> findAll() {
-        return reviewStorage.findAll();
+        List<Review> reviews = reviewStorage.findAll();
+        log.info("Обработан запрос на получение всех отзывов");
+        return reviews;
     }
 
     public Review findById(Long id) {
-        return reviewStorage.findById(id);
+        Review review = reviewStorage.findById(id);
+        log.info("Обработан запрос на получение отзыва с ID {}", id);
+        return review;
     }
 
     public List<Review> findByFilmId(Long id, Long count) {
-        return reviewStorage.findByFilmId(id, count);
+        List<Review> reviews = reviewStorage.findByFilmId(id, count);
+        log.info("Обработан запрос на получение отзывов фильма с ID {}, количество отзывов {}", id, count);
+        return  reviews;
     }
 
     public void create(Review review) {
         userStorage.findById(review.getUserId());
         filmStorage.findById(review.getFilmId());
         reviewStorage.create(review);
+        log.info("Создан отзыв к фильму с ID {} от пользователя с ID {}", review.getFilmId(), review.getUserId());
         eventService.addEvent(review.getUserId(), REVIEW, ADD, review.getReviewId());
     }
 
     public void deleteById(Long id) {
         Review review = reviewStorage.findById(id);
         reviewStorage.deleteById(id);
+        log.info("Удален отзыв с ID {}", id);
         eventService.addEvent(review.getUserId(), REVIEW, REMOVE, review.getReviewId());
     }
 
@@ -55,35 +63,30 @@ public class ReviewService {
         if (review.getIsPositive() != null) savedReview.setIsPositive(review.getIsPositive());
 
         reviewStorage.update(savedReview);
+        log.info("Обновлен отзыв c ID {} к фильму с ID {} от пользователя с ID {}",
+                review.getReviewId(), review.getFilmId(), review.getUserId());
         eventService.addEvent(savedReview.getUserId(), REVIEW, UPDATE, savedReview.getReviewId());
         return savedReview;
     }
 
     public void deleteAllReviews() {
         reviewStorage.deleteAll();
+        log.info("Удалены все отзывы");
     }
 
-    public void likeReview(Long reviewId, Long userId) {
+    public void likeDislikeReview(Long reviewId, Long userId, boolean isLike) {
         Review review = reviewStorage.findById(reviewId);
         User user = userStorage.findById(userId);
-        reviewStorage.likeReview(review, user);
+        reviewStorage.likeDislikeReview(review, user, isLike);
+        reviewStorage.updateReviewUseful(review);
+        log.info("Поставлен {} отзыву с ID {} от пользователя с ID {}", isLike ? "лайк": "дизлайк", reviewId, userId);
     }
 
-    public void dislikeReview(Long reviewId, Long userId) {
+    public void deleteLikeDislikeReview(Long reviewId, Long userId, boolean isLike) {
         Review review = reviewStorage.findById(reviewId);
         User user = userStorage.findById(userId);
-        reviewStorage.dislikeReview(review, user);
-    }
-
-    public void deleteLikeReview(Long reviewId, Long userId) {
-        Review review = reviewStorage.findById(reviewId);
-        User user = userStorage.findById(userId);
-        reviewStorage.deleteLikeReview(review, user);
-    }
-
-    public void deleteDislikeReview(Long reviewId, Long userId) {
-        Review review = reviewStorage.findById(reviewId);
-        User user = userStorage.findById(userId);
-        reviewStorage.deleteDislikeReview(review, user);
+        reviewStorage.deleteLikeDislikeReview(review, user, isLike);
+        reviewStorage.updateReviewUseful(review);
+        log.info("Удален {} у отзыва с ID {} от пользователя с ID {}", isLike ? "лайк": "дизлайк", reviewId, userId);
     }
 }

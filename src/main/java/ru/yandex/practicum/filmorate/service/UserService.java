@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
 
-import java.util.Collection;
 import java.util.List;
 
 import static ru.yandex.practicum.filmorate.model.Event.EventType.FRIEND;
@@ -24,11 +23,15 @@ public class UserService {
     private final EventService eventService;
 
     public List<User> findAll() {
-        return userStorage.findAll();
+        List<User> users = userStorage.findAll();
+        log.info("Обработан запрос на получение всех пользователей");
+        return users;
     }
 
     public User findById(long id) {
-        return userStorage.findById(id);
+        User user = userStorage.findById(id);
+        log.info("Обработан запрос на получение пользователя с ID {}", id);
+        return user;
     }
 
     public User create(User user) {
@@ -36,7 +39,9 @@ public class UserService {
             user.setName(user.getLogin());
             log.debug("Пустое имя пользователя с ID: {} заменено логином", user.getId());
         }
-        return userStorage.create(user);
+        User createdUser = userStorage.create(user);
+        log.info("Создан пользователь с ID {}", createdUser.getId());
+        return createdUser;
     }
 
     public User update(User user) {
@@ -47,18 +52,21 @@ public class UserService {
         if (user.getLogin() != null) savedUser.setLogin((user.getLogin()));
         if (user.getBirthday() != null) savedUser.setBirthday((user.getBirthday()));
 
-        userStorage.update(user);
+        userStorage.update(savedUser);
+        log.info("Обновлен пользователь с ID {}", savedUser.getId());
         return savedUser;
     }
 
     public void deleteAll() {
         userStorage.deleteAll();
+        log.info("Удалены все пользователи");
     }
 
     public User addFriend(long userId, long friendId) {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
         friendStorage.addFriend(user, friend);
+        log.info("Добавлен пользователю с ID {} друг с ID {}", userId, friendId);
         eventService.addEvent(userId, FRIEND, ADD, friendId);
         return user;
     }
@@ -67,19 +75,24 @@ public class UserService {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
         friendStorage.deleteFriend(user, friend);
+        log.info("Удален у пользователя с ID {} друг с ID {}", userId, friendId);
         eventService.addEvent(userId, FRIEND, REMOVE, friendId);
         return user;
     }
 
     public List<User> getFriends(long userId) {
         User user = userStorage.findById(userId);
-        return friendStorage.getFriends(user);
+        List<User> friends = friendStorage.getFriends(user);
+        log.info("Обработан запрос на получение друзей пользователя с ID {}", userId);
+        return friends;
     }
 
     public List<User> getCommonFriends(long userId, long otherId) {
         User user = userStorage.findById(userId);
         User other = userStorage.findById(otherId);
-        return friendStorage.getCommonFriends(user, other);
+        List<User> friends = friendStorage.getCommonFriends(user, other);
+        log.info("Обработан запрос на получение общих друзей пользователей с ID {} и ID {}", userId, otherId);
+        return friends;
     }
 
     public void deleteUser(Long id) {
@@ -87,8 +100,10 @@ public class UserService {
         log.info("Пользователь с ID: {} успешно удалён", id);
     }
 
-    public Collection<Event> getEvents(long id) {
+    public List<Event> getEvents(long id) {
         findById(id);
-        return eventService.getEvents(id);
+        List<Event> events = eventService.getEvents(id);
+        log.info("Обработан запрос на получение события с ID {}", id);
+        return events;
     }
 }

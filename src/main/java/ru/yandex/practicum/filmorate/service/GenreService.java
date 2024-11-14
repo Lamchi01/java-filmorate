@@ -15,21 +15,28 @@ public class GenreService {
     private final BaseStorage<Genre> genreStorage;
 
     public List<Genre> findAll() {
-        return genreStorage.findAll();
+        List<Genre> genres = genreStorage.findAll();
+        log.info("Обработан запрос на получение всех жанров");
+        return genres;
     }
 
     public Genre findById(Long id) {
-        return genreStorage.findById(id);
+        Genre genre = genreStorage.findById(id);
+        log.info("Обработан запрос на получение жанра с ID {}", id);
+        return genre;
     }
 
     public Genre create(Genre genre) {
-        return genreStorage.create(genre);
+        Genre gen = genreStorage.create(genre) ;
+        log.info("Создан жанр с ID {}", gen.getId());
+        return gen;
     }
 
     public Genre update(Genre genre) {
         Genre savedGenre = genreStorage.findById(genre.getId());
         if (genre.getName() != null) savedGenre.setName(genre.getName());
-        genreStorage.update(genre);
+        genreStorage.update(savedGenre);
+        log.info("Обновлен жанр с ID {}", genre.getId());
         return savedGenre;
     }
 

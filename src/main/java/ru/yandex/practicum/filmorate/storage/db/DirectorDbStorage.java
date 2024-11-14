@@ -38,44 +38,46 @@ public class DirectorDbStorage extends BaseDbStorage<Director> implements Direct
 
     @Override
     public List<Director> findAll() {
+        log.info("Получение всех режиссеров");
         return findMany(FIND_ALL_QUERY);
-
     }
 
     @Override
     public Director findById(Long id) {
+        log.info("Получение режиссера с ID {}", id);
         return findOne(FIND_BY_ID_QUERY, id).orElseThrow(() -> new NotFoundException("Director with id " + id + " not found"));
     }
 
     @Override
     public Director create(Director director) {
+        log.info("Добавление режиссера");
         long id = insert(INSERT_QUERY, director.getName());
-        log.info("Добавлен новый режиссёр с ID: {}", director.getId());
         director.setId(id);
         return director;
     }
 
     @Override
     public Director update(Director director) {
+        log.info("Обновление режиссера с ID {}", director.getId());
         update(UPDATE_QUERY, director.getName(), director.getId());
-        log.info("Обновлен режиссёр с ID: {}", director.getId());
         return director;
     }
 
     @Override
     public void deleteAll() {
+        log.info("Удаление всех режиссеров");
         removeAll(DELETE_ALL_QUERY);
-        log.info("Удалены все режиссёры");
     }
 
     @Override
     public List<Director> getDirectors(Film film) {
-        log.info("Получен запрос на получение режиссёров фильма с ID {}", film.getId());
+        log.info("Получение всех режиссёров фильма с ID {}", film.getId());
         return jdbc.query(FIND_BY_FILM_ID_QUERY, new DirectorRowMapper(), film.getId());
     }
 
     @Override
     public void addDirectors(Film film, List<Director> director) {
+        log.info("Добавление режиссеров к фильму с ID {}", film.getId());
         jdbc.batchUpdate(INSERT_FILM_DIRECTORS_RELATION_QUERY, new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
@@ -92,14 +94,14 @@ public class DirectorDbStorage extends BaseDbStorage<Director> implements Direct
 
     @Override
     public void deleteFilmDirectors(Film film) {
+        log.info("Удаление режиссеров фильма с ID {}", film.getId());
         jdbc.update(DELETE_FILM_DIRECTORS_RELATION_QUERY, film.getId());
-        log.info("Удалили всех режиссёров у фильма с ID {}", film.getId());
     }
 
     @Override
     public void deleteById(long id) {
+        log.info("Удаление режиссера с ID {}", id);
         removeOne(DELETE_BY_ID_QUERY, id);
-        log.info("Режиссёр с ID: {} успешно удалён", id);
     }
 
 }

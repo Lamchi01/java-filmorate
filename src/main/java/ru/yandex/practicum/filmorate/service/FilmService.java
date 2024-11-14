@@ -37,6 +37,7 @@ public class FilmService {
         Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getAllFilmGenres();
         Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getAllFilmDirectors();
         fillGenresAndDirectorsForFilms(films, genres, directors);
+        log.info("Обработан запрос на получение всех фильмов");
         return films;
     }
 
@@ -44,6 +45,7 @@ public class FilmService {
         Film film = filmStorage.findById(id);
         film.setGenres(new LinkedHashSet<>(filmGenreStorage.getGenres(film)));
         film.setDirectors(new LinkedHashSet<>(directorStorage.getDirectors(film)));
+        log.info("Обработан запрос на получение фильма с ID {}", id);
         return film;
     }
 
@@ -60,6 +62,7 @@ public class FilmService {
             directorStorage.addDirectors(film, directors.stream().toList());
             film.setDirectors(new LinkedHashSet<>(directorStorage.getDirectors(film)));
         }
+        log.info("Создан фильм с ID {}", film.getId());
     }
 
     public Film update(Film film) {
@@ -72,25 +75,27 @@ public class FilmService {
         if (film.getDuration() != null) savedFilm.setDuration(film.getDuration());
         if (film.getName() != null) savedFilm.setName(film.getName());
         if (film.getGenres() != null) {
-            filmGenreStorage.deleteFilmGenres(film); // удалим все жанры фильмы из таблицы FILM_GENRES
-            filmGenreStorage.addGenres(film, film.getGenres().stream().toList());
+            filmGenreStorage.deleteFilmGenres(savedFilm); // удалим все жанры фильмы из таблицы FILM_GENRES
+            filmGenreStorage.addGenres(savedFilm, film.getGenres().stream().toList());
             // оставить для MockMvc тестов контроллеров, так как жанры могут приходить без имени
-            film.setGenres(new LinkedHashSet<>(filmGenreStorage.getGenres(film)));
+            savedFilm.setGenres(new LinkedHashSet<>(filmGenreStorage.getGenres(film)));
         }
         if (film.getDirectors() != null) {
-            directorStorage.deleteFilmDirectors(film);
-            directorStorage.addDirectors(film, film.getDirectors().stream().toList());
-            film.setDirectors(new LinkedHashSet<>(directorStorage.getDirectors(film)));
+            directorStorage.deleteFilmDirectors(savedFilm);
+            directorStorage.addDirectors(savedFilm, film.getDirectors().stream().toList());
+            savedFilm.setDirectors(new LinkedHashSet<>(directorStorage.getDirectors(film)));
         }
         if (film.getMpa() != null) savedFilm.setMpa(film.getMpa());
         if (film.getLikes() != null) savedFilm.setLikes(film.getLikes());
 
-        filmStorage.update(film);
-        return film;
+        filmStorage.update(savedFilm);
+        log.info("Обновлен фильм с ID {}", savedFilm.getId());
+        return savedFilm;
     }
 
     public void deleteAllFilms() {
         filmStorage.deleteAll();
+        log.info("Удалены все фильмы");
     }
 
     public Film likeFilm(long filmId, long userId) {
@@ -112,21 +117,21 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilms(int count, Long genreId, Integer year) {
-        log.info("Получен запрос на получение {} популярных фильмов с фильтрацией по жанру и году", count);
         List<Film> films = filmStorage.getPopularFilms(count, genreId, year);
         Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getFilmsGenres(films);
         Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getFilmsDirectors(films);
         fillGenresAndDirectorsForFilms(films, genres, directors);
+        log.info("Обработан запрос на получение {} популярных фильмов с фильтрацией по жанру и году", count);
         return films;
     }
 
     public List<Film> findFilmsByDirectorId(long directorId, String sortedBy) {
-        log.info("Получен запрос на получение фильмов режиссёра с ID = {}", directorId);
         directorStorage.findById(directorId);
         List<Film> directorFilms = filmStorage.findFilmsByDirectorId(directorId, sortedBy);
         Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getAllFilmGenres();
         Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getAllFilmDirectors();
         fillGenresAndDirectorsForFilms(directorFilms, genres, directors);
+        log.info("Обработан запрос на получение фильмов режиссёра с ID = {}", directorId);
         return directorFilms;
     }
 
@@ -140,6 +145,7 @@ public class FilmService {
         Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getFilmsGenres(films);
         Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getFilmsDirectors(films);
         fillGenresAndDirectorsForFilms(films, genres, directors);
+        log.info("Обработан запрос на получение общих фильмов пользователей с ID {} и ID {}", userId, friendId);
         return films;
     }
 
@@ -149,15 +155,19 @@ public class FilmService {
         Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getFilmsGenres(films);
         Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getFilmsDirectors(films);
         fillGenresAndDirectorsForFilms(films, genres, directors);
+        log.info("Обработан запрос на получение фильмов по запросу {}, {}", query, by);
         return films;
     }
 
     public List<Film> getRecommendation(long userId) {
         userStorage.findById(userId);
-        log.info("Получен запрос на список рекомендованных фильмов для пользователя с ID {}", userId);
-        return filmDbStorage.getRecommendation(userId);
+        List<Film> films = filmDbStorage.getRecommendation(userId);
+        Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getFilmsGenres(films);
+        Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getFilmsDirectors(films);
+        fillGenresAndDirectorsForFilms(films, genres, directors);
+        log.info("Обработан запрос на список рекомендованных фильмов для пользователя с ID {}", userId);
+        return films;
     }
-
 
     /**
      * Метод заполнения жанров и режиссёров каждому фильму из списка со всеми фильмами
@@ -176,5 +186,4 @@ public class FilmService {
             }
         }
     }
-
 }

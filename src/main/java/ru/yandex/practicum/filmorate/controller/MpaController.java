@@ -19,28 +19,33 @@ public class MpaController {
 
     @GetMapping
     public List<Mpa> findAll() {
+        log.info("Получен запрос на получение всех рейтингов MPA");
         return mpaService.findAll();
     }
 
     @GetMapping("/{id}")
     public Mpa findById(@PathVariable long id) {
+        log.info("Получен запрос на получение рейтинга MPA с ID {}", id);
         return mpaService.findById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mpa createMpa(@Valid @RequestBody Mpa mpa) {
+        log.info("Получен запрос на создание рейтинга MPA");
         mpaService.create(mpa);
         return mpa;
     }
 
     @PutMapping
     public Mpa updateMpa(@Valid @RequestBody Mpa mpa) {
+        log.info("Получен запрос на обновление рейтинга с ID {}", mpa.getId());
         return mpaService.update(mpa);
     }
 
     @DeleteMapping
     public void deleteAllMpa() {
+        log.info("Получен запрос на удаление всех рейтингов MPA");
         mpaService.deleteAllMpa();
     }
 }

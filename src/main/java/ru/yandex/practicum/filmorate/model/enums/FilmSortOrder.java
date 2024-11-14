@@ -4,13 +4,10 @@ public enum FilmSortOrder {
     YEAR, LIKES;
 
     public static FilmSortOrder from(String sortBy) {
-        switch (sortBy.toLowerCase()) {
-            case "year":
-                return YEAR;
-            case "likes":
-                return LIKES;
-            default:
-                return null;
-        }
+        return switch (sortBy.toLowerCase()) {
+            case "year" -> YEAR;
+            case "likes" -> LIKES;
+            default -> null;
+        };
     }
 }
