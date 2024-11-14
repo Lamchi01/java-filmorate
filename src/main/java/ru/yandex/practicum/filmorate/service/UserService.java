@@ -84,7 +84,7 @@ public class UserService {
 
     public void deleteUser(Long id) {
         userStorage.deleteById(id);
-        log.trace("Пользователь с ID: {} успешно удалён", id);
+        log.info("Пользователь с ID: {} успешно удалён", id);
     }
 
     public Collection<Event> getEvents(long id) {

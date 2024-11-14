@@ -27,14 +27,14 @@ public class FilmGenreDbStorage implements FilmGenreStorage {
 
     @Override
     public List<Genre> getGenres(Film film) {
-        log.trace("Получен запрос на получение жанров фильма с ID {}", film.getId());
+        log.info("Получен запрос на получение жанров фильма с ID {}", film.getId());
         return jdbc.query(FIND_BY_ID_QUERY, new GenreRowMapper(), film.getId());
     }
 
     @Override
     public void addGenre(Film film, Genre genre) {
         jdbc.update(INSERT_QUERY, film.getId(), genre.getId());
-        log.trace("Добавлен жанр с ID {} к фильму с ID {}", genre.getId(), film.getId());
+        log.info("Добавлен жанр с ID {} к фильму с ID {}", genre.getId(), film.getId());
     }
 
     @Override
@@ -56,6 +56,6 @@ public class FilmGenreDbStorage implements FilmGenreStorage {
     @Override
     public void deleteFilmGenres(Film film) {
         jdbc.update(DELETE_BY_ID_QUERY, film.getId());
-        log.trace("УдалиЛи все жанры у фильма с ID {}", film.getId());
+        log.info("УдалиЛи все жанры у фильма с ID {}", film.getId());
     }
 }

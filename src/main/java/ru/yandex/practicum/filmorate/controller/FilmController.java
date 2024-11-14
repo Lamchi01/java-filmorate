@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.WrongRequestException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.FilmFilters;
+import ru.yandex.practicum.filmorate.model.enums.FilmSortOrder;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
@@ -70,7 +72,7 @@ public class FilmController {
 
     @GetMapping("/director/{directorId}")
     public List<Film> findByDirectorId(@PathVariable long directorId, @RequestParam(defaultValue = "year") String sortBy) {
-        if (!sortBy.equals("year") && !sortBy.equals("likes")) {
+        if (FilmSortOrder.from(sortBy) == null) {
             throw new WrongRequestException("Указано неверное значение условия сортировки ответа (sortedBy)");
         }
         return filmService.findFilmsByDirectorId(directorId, sortBy);
@@ -91,8 +93,7 @@ public class FilmController {
     @GetMapping("/search")
     public List<Film> findFilms(@RequestParam String query,
                                 @RequestParam String by) {
-        if (!by.equals("director") && !by.equals("title")
-                && !by.equals("director,title") && !by.equals("title,director")) {
+        if (FilmFilters.from(by) == null) {
             throw new WrongRequestException("Указано неверное значение критерия поиска (by)");
         }
         return filmService.findFilms(query, by);

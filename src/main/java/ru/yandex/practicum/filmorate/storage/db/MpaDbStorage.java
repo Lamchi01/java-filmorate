@@ -24,26 +24,26 @@ public class MpaDbStorage extends BaseDbStorage<Mpa> implements BaseStorage<Mpa>
     }
 
     public List<Mpa> findAll() {
-        log.trace("Получен запрос на получение всех рейтингов MPA");
+        log.info("Получен запрос на получение всех рейтингов MPA");
         return findMany(FIND_ALL_QUERY);
     }
 
     public Mpa findById(Long id) {
-        log.trace("Получен запрос на получение рейтинга MPA с ID: {}", id);
+        log.info("Получен запрос на получение рейтинга MPA с ID: {}", id);
         return findOne(FIND_BY_ID_QUERY, id).orElseThrow(() -> new NotFoundException("MPA with id " + id + " not found"));
     }
 
     @Override
     public Mpa update(Mpa mpa) {
         update(UPDATE_QUERY, mpa.getName(), mpa.getId());
-        log.trace("Обновлен рейтинг MPA с ID: {}", mpa.getId());
+        log.info("Обновлен рейтинг MPA с ID: {}", mpa.getId());
         return mpa;
     }
 
     @Override
     public void deleteAll() {
         removeAll(DELETE_ALL_QUERY);
-        log.trace("Удалены все рейтинги MPA");
+        log.info("Удалены все рейтинги MPA");
     }
 
     @Override
@@ -54,7 +54,7 @@ public class MpaDbStorage extends BaseDbStorage<Mpa> implements BaseStorage<Mpa>
     public Mpa create(Mpa mpa) {
         long id = insert(INSERT_QUERY, mpa.getName());
         mpa.setId(id);
-        log.trace("Добавлен новый рейтинг MPA с ID: {}", mpa.getId());
+        log.info("Добавлен новый рейтинг MPA с ID: {}", mpa.getId());
         return mpa;
     }
 }

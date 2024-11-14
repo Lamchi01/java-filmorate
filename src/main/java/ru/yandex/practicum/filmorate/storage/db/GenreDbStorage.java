@@ -25,35 +25,35 @@ public class GenreDbStorage extends BaseDbStorage<Genre> implements BaseStorage<
 
     @Override
     public List<Genre> findAll() {
-        log.trace("Получен запрос на получение всех жанров");
+        log.info("Получен запрос на получение всех жанров");
         return findMany(FIND_ALL_QUERY);
     }
 
     @Override
     public Genre create(Genre genre) {
         long id = insert(INSERT_QUERY, genre.getName());
-        log.trace("Добавлен новый жанр с ID: {}", genre.getId());
+        log.info("Добавлен новый жанр с ID: {}", genre.getId());
         genre.setId(id);
         return genre;
     }
 
     @Override
     public Genre findById(Long id) {
-        log.trace("Получен запрос на получение жанра с ID: {}", id);
+        log.info("Получен запрос на получение жанра с ID: {}", id);
         return findOne(FIND_BY_ID_QUERY, id).orElseThrow(() -> new NotFoundException("Genre with id " + id + " not found"));
     }
 
     @Override
     public Genre update(Genre genre) {
         update(UPDATE_QUERY, genre.getName(), genre.getId());
-        log.trace("Обновлен жанр с ID: {}", genre.getId());
+        log.info("Обновлен жанр с ID: {}", genre.getId());
         return genre;
     }
 
     @Override
     public void deleteAll() {
         removeAll(DELETE_ALL_QUERY);
-        log.trace("Удалены все жанры");
+        log.info("Удалены все жанры");
     }
 
     @Override

@@ -27,13 +27,13 @@ public class UserDbStorage extends BaseDbStorage<User> implements BaseStorage<Us
 
     @Override
     public List<User> findAll() {
-        log.trace("Получен запрос на получение всех пользователей");
+        log.info("Получен запрос на получение всех пользователей");
         return findMany(FIND_ALL_QUERY);
     }
 
     @Override
     public User findById(Long id) {
-        log.trace("Получен запрос на получение пользовтале с IDL {}", id);
+        log.info("Получен запрос на получение пользовтале с IDL {}", id);
         User user = findOne(FIND_BY_ID_QUERY, id).orElseThrow(() -> new NotFoundException("User with ID " + id + " not found"));
         if (user == null) {
             log.warn("Пользователь с ID: {} не найден", id);
@@ -46,21 +46,21 @@ public class UserDbStorage extends BaseDbStorage<User> implements BaseStorage<Us
     public User create(User user) {
         long id = insert(INSERT_QUERY, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
         user.setId(id);
-        log.trace("Добавлен новый пользователь с ID: {}", user.getId());
+        log.info("Добавлен новый пользователь с ID: {}", user.getId());
         return user;
     }
 
     @Override
     public User update(User user) {
         update(UPDATE_QUERY, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), user.getId());
-        log.trace("Обновлен пользователь с ID: {}", user.getId());
+        log.info("Обновлен пользователь с ID: {}", user.getId());
         return user;
     }
 
     @Override
     public void deleteAll() {
         removeAll(DELETE_ALL_QUERY);
-        log.trace("Удалены все пользователи");
+        log.info("Удалены все пользователи");
     }
 
 
@@ -69,6 +69,6 @@ public class UserDbStorage extends BaseDbStorage<User> implements BaseStorage<Us
         if (!removeOne(DELETE_BY_ID_QUERY, id)) {
             throw new NotFoundException("Пользователь с ID " + id + " не найден.");
         }
-        log.trace("Пользователь с ID: {} успешно удалён", id);
+        log.info("Пользователь с ID: {} успешно удалён", id);
     }
 }
