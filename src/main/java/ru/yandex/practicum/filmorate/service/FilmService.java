@@ -23,8 +23,7 @@ public class FilmService {
     private final FilmGenreStorage filmGenreStorage;
     private final DirectorStorage directorStorage;
     private final BaseStorage<Mpa> mpaStorage;
-    private final EventService eventService;
-    private final FilmDbStorage filmDbStorage;
+    private final EventStorage eventStorage;
 
     /**
      * Поиск всех фильмов с маппингом жанров
@@ -34,8 +33,8 @@ public class FilmService {
      */
     public List<Film> findAll() {
         List<Film> films = filmStorage.findAll();
-        Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getAllFilmGenres();
-        Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getAllFilmDirectors();
+        Map<Long, LinkedHashSet<Genre>> genres = filmStorage.getAllFilmGenres();
+        Map<Long, LinkedHashSet<Director>> directors = filmStorage.getAllFilmDirectors();
         fillGenresAndDirectorsForFilms(films, genres, directors);
         log.info("Обработан запрос на получение всех фильмов");
         return films;
@@ -103,7 +102,7 @@ public class FilmService {
         User user = userStorage.findById(userId);
         likeStorage.likeFilm(film, user);
         log.info("Добавлен лайк к фильму с ID: {} пользователем с ID: {}", filmId, userId);
-        eventService.addEvent(userId, LIKE, ADD, filmId);
+        eventStorage.addEvent(userId, LIKE, ADD, filmId);
         return film;
     }
 
@@ -112,14 +111,14 @@ public class FilmService {
         User user = userStorage.findById(userId);
         likeStorage.deleteLike(film, user);
         log.info("Удален лайк к фильму с ID: {} пользователя с ID: {}", filmId, userId);
-        eventService.addEvent(userId, LIKE, REMOVE, filmId);
+        eventStorage.addEvent(userId, LIKE, REMOVE, filmId);
         return film;
     }
 
     public List<Film> getPopularFilms(int count, Long genreId, Integer year) {
         List<Film> films = filmStorage.getPopularFilms(count, genreId, year);
-        Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getFilmsGenres(films);
-        Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getFilmsDirectors(films);
+        Map<Long, LinkedHashSet<Genre>> genres = filmStorage.getFilmsGenres(films);
+        Map<Long, LinkedHashSet<Director>> directors = filmStorage.getFilmsDirectors(films);
         fillGenresAndDirectorsForFilms(films, genres, directors);
         log.info("Обработан запрос на получение {} популярных фильмов с фильтрацией по жанру и году", count);
         return films;
@@ -128,8 +127,8 @@ public class FilmService {
     public List<Film> findFilmsByDirectorId(long directorId, String sortedBy) {
         directorStorage.findById(directorId);
         List<Film> directorFilms = filmStorage.findFilmsByDirectorId(directorId, sortedBy);
-        Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getAllFilmGenres();
-        Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getAllFilmDirectors();
+        Map<Long, LinkedHashSet<Genre>> genres = filmStorage.getAllFilmGenres();
+        Map<Long, LinkedHashSet<Director>> directors = filmStorage.getAllFilmDirectors();
         fillGenresAndDirectorsForFilms(directorFilms, genres, directors);
         log.info("Обработан запрос на получение фильмов режиссёра с ID = {}", directorId);
         return directorFilms;
@@ -142,8 +141,8 @@ public class FilmService {
 
     public List<Film> findCommonFilms(long userId, long friendId) {
         List<Film> films = filmStorage.findCommonFilms(userId, friendId);
-        Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getFilmsGenres(films);
-        Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getFilmsDirectors(films);
+        Map<Long, LinkedHashSet<Genre>> genres = filmStorage.getFilmsGenres(films);
+        Map<Long, LinkedHashSet<Director>> directors = filmStorage.getFilmsDirectors(films);
         fillGenresAndDirectorsForFilms(films, genres, directors);
         log.info("Обработан запрос на получение общих фильмов пользователей с ID {} и ID {}", userId, friendId);
         return films;
@@ -152,8 +151,8 @@ public class FilmService {
     public List<Film> findFilms(String query, String by) {
         log.info("Получен запрос на поиск фильмов. Строка поиска = {}", query);
         List<Film> films = filmStorage.findFilms(query, by);
-        Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getFilmsGenres(films);
-        Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getFilmsDirectors(films);
+        Map<Long, LinkedHashSet<Genre>> genres = filmStorage.getFilmsGenres(films);
+        Map<Long, LinkedHashSet<Director>> directors = filmStorage.getFilmsDirectors(films);
         fillGenresAndDirectorsForFilms(films, genres, directors);
         log.info("Обработан запрос на получение фильмов по запросу {}, {}", query, by);
         return films;
@@ -161,9 +160,9 @@ public class FilmService {
 
     public List<Film> getRecommendation(long userId) {
         userStorage.findById(userId);
-        List<Film> films = filmDbStorage.getRecommendation(userId);
-        Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getFilmsGenres(films);
-        Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getFilmsDirectors(films);
+        List<Film> films = filmStorage.getRecommendation(userId);
+        Map<Long, LinkedHashSet<Genre>> genres = filmStorage.getFilmsGenres(films);
+        Map<Long, LinkedHashSet<Director>> directors = filmStorage.getFilmsDirectors(films);
         fillGenresAndDirectorsForFilms(films, genres, directors);
         log.info("Обработан запрос на список рекомендованных фильмов для пользователя с ID {}", userId);
         return films;

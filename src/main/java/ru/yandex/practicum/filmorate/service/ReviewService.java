@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
@@ -21,7 +22,7 @@ public class ReviewService {
     private final ReviewStorage reviewStorage;
     private final FilmStorage filmStorage;
     private final BaseStorage<User> userStorage;
-    private final EventService eventService;
+    private final EventStorage eventStorage;
 
     public List<Review> findAll() {
         List<Review> reviews = reviewStorage.findAll();
@@ -46,14 +47,14 @@ public class ReviewService {
         filmStorage.findById(review.getFilmId());
         reviewStorage.create(review);
         log.info("Создан отзыв к фильму с ID {} от пользователя с ID {}", review.getFilmId(), review.getUserId());
-        eventService.addEvent(review.getUserId(), REVIEW, ADD, review.getReviewId());
+        eventStorage.addEvent(review.getUserId(), REVIEW, ADD, review.getReviewId());
     }
 
     public void deleteById(Long id) {
         Review review = reviewStorage.findById(id);
         reviewStorage.deleteById(id);
         log.info("Удален отзыв с ID {}", id);
-        eventService.addEvent(review.getUserId(), REVIEW, REMOVE, review.getReviewId());
+        eventStorage.addEvent(review.getUserId(), REVIEW, REMOVE, review.getReviewId());
     }
 
     public Review update(Review review) {
@@ -65,7 +66,7 @@ public class ReviewService {
         reviewStorage.update(savedReview);
         log.info("Обновлен отзыв c ID {} к фильму с ID {} от пользователя с ID {}",
                 review.getReviewId(), review.getFilmId(), review.getUserId());
-        eventService.addEvent(savedReview.getUserId(), REVIEW, UPDATE, savedReview.getReviewId());
+        eventStorage.addEvent(savedReview.getUserId(), REVIEW, UPDATE, savedReview.getReviewId());
         return savedReview;
     }
 

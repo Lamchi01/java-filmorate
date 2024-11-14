@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
 
 import java.util.List;
@@ -20,7 +21,7 @@ import static ru.yandex.practicum.filmorate.model.Event.Operation.REMOVE;
 public class UserService {
     private final BaseStorage<User> userStorage;
     private final FriendStorage friendStorage;
-    private final EventService eventService;
+    private final EventStorage eventStorage;
 
     public List<User> findAll() {
         List<User> users = userStorage.findAll();
@@ -67,7 +68,7 @@ public class UserService {
         User friend = userStorage.findById(friendId);
         friendStorage.addFriend(user, friend);
         log.info("Добавлен пользователю с ID {} друг с ID {}", userId, friendId);
-        eventService.addEvent(userId, FRIEND, ADD, friendId);
+        eventStorage.addEvent(userId, FRIEND, ADD, friendId);
         return user;
     }
 
@@ -76,7 +77,7 @@ public class UserService {
         User friend = userStorage.findById(friendId);
         friendStorage.deleteFriend(user, friend);
         log.info("Удален у пользователя с ID {} друг с ID {}", userId, friendId);
-        eventService.addEvent(userId, FRIEND, REMOVE, friendId);
+        eventStorage.addEvent(userId, FRIEND, REMOVE, friendId);
         return user;
     }
 
@@ -102,7 +103,7 @@ public class UserService {
 
     public List<Event> getEvents(long id) {
         findById(id);
-        List<Event> events = eventService.getEvents(id);
+        List<Event> events = eventStorage.getEvents(id);
         log.info("Обработан запрос на получение события с ID {}", id);
         return events;
     }

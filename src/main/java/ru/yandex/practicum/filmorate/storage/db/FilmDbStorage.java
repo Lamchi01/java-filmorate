@@ -255,6 +255,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
      * @param films - список фильмов для выборки
      * @return - HashSet, ключ - ID фильма, значение - список жанров в виде объектов
      */
+    @Override
     public Map<Long, LinkedHashSet<Genre>> getFilmsGenres(List<Film> films) {
         log.info("Получение жанров фильмов");
         Long[] filmIds = films.stream().map(Film::getId).toArray(Long[]::new);
@@ -279,6 +280,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
      * @param films - список фильмов для выборки
      * @return - HashSet, ключ - ID фильма, значение - список режиссёров в виде объектов
      */
+    @Override
     public Map<Long, LinkedHashSet<Director>> getFilmsDirectors(List<Film> films) {
         log.info("Получение режиссеров фильмов");
         Long[] filmIds = films.stream().map(Film::getId).toArray(Long[]::new);
@@ -310,6 +312,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
      *
      * @return - HashSet, ключ- ID фильма, значение - список жанров в виде объектов
      */
+    @Override
     public Map<Long, LinkedHashSet<Genre>> getAllFilmGenres() {
         log.info("Получение всех жанров");
         Map<Long, LinkedHashSet<Genre>> res = new HashMap<>();
@@ -329,6 +332,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
      *
      * @return - HashSet, ключ- ID фильма, значение - список режиссёров в виде объектов
      */
+    @Override
     public Map<Long, LinkedHashSet<Director>> getAllFilmDirectors() {
         log.info("Получение всех режиссеров");
         Map<Long, LinkedHashSet<Director>> res = new HashMap<>();
