@@ -7,9 +7,7 @@ import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.*;
 import ru.yandex.practicum.filmorate.storage.db.FilmDbStorage;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static ru.yandex.practicum.filmorate.model.Event.EventType.LIKE;
 import static ru.yandex.practicum.filmorate.model.Event.Operation.ADD;
@@ -35,7 +33,11 @@ public class FilmService {
      * @return - список фильмов
      */
     public List<Film> findAll() {
-        return filmStorage.findAll();
+        List<Film> films = filmStorage.findAll();
+        Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getAllFilmGenres();
+        Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getAllFilmDirectors();
+        fillGenresAndDirectorsForFilms(films, genres, directors);
+        return films;
     }
 
     public Film findById(Long id) {
@@ -95,7 +97,7 @@ public class FilmService {
         Film film = filmStorage.findById(filmId);
         User user = userStorage.findById(userId);
         likeStorage.likeFilm(film, user);
-        log.trace("Добавлен лайк к фильму с ID: {} пользователем с ID: {}", filmId, userId);
+        log.info("Добавлен лайк к фильму с ID: {} пользователем с ID: {}", filmId, userId);
         eventService.addEvent(userId, LIKE, ADD, filmId);
         return film;
     }
@@ -104,39 +106,75 @@ public class FilmService {
         Film film = filmStorage.findById(filmId);
         User user = userStorage.findById(userId);
         likeStorage.deleteLike(film, user);
-        log.trace("Удален лайк к фильму с ID: {} пользователя с ID: {}", filmId, userId);
+        log.info("Удален лайк к фильму с ID: {} пользователя с ID: {}", filmId, userId);
         eventService.addEvent(userId, LIKE, REMOVE, filmId);
         return film;
     }
 
     public List<Film> getPopularFilms(int count, Long genreId, Integer year) {
-        log.trace("Получен запрос на получение {} популярных фильмов с фильтрацией по жанру и году", count);
-        return filmStorage.getPopularFilms(count, genreId, year);
+        log.info("Получен запрос на получение {} популярных фильмов с фильтрацией по жанру и году", count);
+        List<Film> films = filmStorage.getPopularFilms(count, genreId, year);
+        Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getFilmsGenres(films);
+        Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getFilmsDirectors(films);
+        fillGenresAndDirectorsForFilms(films, genres, directors);
+        return films;
     }
 
     public List<Film> findFilmsByDirectorId(long directorId, String sortedBy) {
-        log.trace("Получен запрос на получение фильмов режиссёра с ID = {}", directorId);
+        log.info("Получен запрос на получение фильмов режиссёра с ID = {}", directorId);
         directorStorage.findById(directorId);
-        return filmStorage.findFilmsByDirectorId(directorId, sortedBy);
+        List<Film> directorFilms = filmStorage.findFilmsByDirectorId(directorId, sortedBy);
+        Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getAllFilmGenres();
+        Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getAllFilmDirectors();
+        fillGenresAndDirectorsForFilms(directorFilms, genres, directors);
+        return directorFilms;
     }
 
     public void deleteFilm(Long id) {
         filmStorage.deleteById(id);
-        log.trace("Фильм с ID: {} успешно удалён", id);
+        log.info("Фильм с ID: {} успешно удалён", id);
     }
 
     public List<Film> findCommonFilms(long userId, long friendId) {
-        return filmStorage.findCommonFilms(userId, friendId);
+        List<Film> films = filmStorage.findCommonFilms(userId, friendId);
+        Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getFilmsGenres(films);
+        Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getFilmsDirectors(films);
+        fillGenresAndDirectorsForFilms(films, genres, directors);
+        return films;
     }
 
     public List<Film> findFilms(String query, String by) {
-        log.trace("Получен запрос на поиск фильмов. Строка поиска = {}", query);
-        return filmStorage.findFilms(query, by);
+        log.info("Получен запрос на поиск фильмов. Строка поиска = {}", query);
+        List<Film> films = filmStorage.findFilms(query, by);
+        Map<Long, LinkedHashSet<Genre>> genres = filmDbStorage.getFilmsGenres(films);
+        Map<Long, LinkedHashSet<Director>> directors = filmDbStorage.getFilmsDirectors(films);
+        fillGenresAndDirectorsForFilms(films, genres, directors);
+        return films;
     }
 
     public List<Film> getRecommendation(long userId) {
         userStorage.findById(userId);
-        log.trace("Получен запрос на список рекомендованных фильмов для пользователя с ID {}", userId);
+        log.info("Получен запрос на список рекомендованных фильмов для пользователя с ID {}", userId);
         return filmDbStorage.getRecommendation(userId);
     }
+
+
+    /**
+     * Метод заполнения жанров и режиссёров каждому фильму из списка со всеми фильмами
+     *
+     * @param films список фильмов, которым нужно найти жанры и режиссёров в системе,
+     *              а также - заполнить соответствующие поля
+     */
+    private void fillGenresAndDirectorsForFilms(List<Film> films, Map<Long, LinkedHashSet<Genre>> genres,
+                                                Map<Long, LinkedHashSet<Director>> directors) {
+        for (Film film : films) {
+            if (genres.containsKey(film.getId())) {
+                film.setGenres(new LinkedHashSet<>(genres.get(film.getId())));
+            }
+            if (directors.containsKey(film.getId())) {
+                film.setDirectors(new LinkedHashSet<>(directors.get(film.getId())));
+            }
+        }
+    }
+
 }

@@ -90,24 +90,14 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
 
     @Override
     public List<Film> findAll() {
-        log.trace("Получен запрос на получение всех фильмов");
+        log.info("Получен запрос на получение всех фильмов");
         List<Film> films = findMany(FIND_ALL_QUERY);
-        Map<Long, LinkedHashSet<Genre>> genres = getAllFilmGenres();
-        Map<Long, LinkedHashSet<Director>> directors = getAllFilmDirectors();
-        for (Film film : films) {
-            if (genres.containsKey(film.getId())) {
-                film.setGenres(new LinkedHashSet<>(genres.get(film.getId())));
-            }
-            if (directors.containsKey(film.getId())) {
-                film.setDirectors(new LinkedHashSet<>(directors.get(film.getId())));
-            }
-        }
         return films;
     }
 
     @Override
     public Film findById(Long id) {
-        log.trace("Получен запрос на получение фильма с ID: {}", id);
+        log.info("Получен запрос на получение фильма с ID: {}", id);
         return findOne(FIND_BY_ID_QUERY, id).orElseThrow(() -> new NotFoundException("User with ID " + id + " not found"));
     }
 
@@ -115,21 +105,21 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     public Film create(Film film) {
         long id = insert(INSERT_QUERY, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId());
         film.setId(id);
-        log.trace("Добавлен новый фильм с ID: {}", film.getId());
+        log.info("Добавлен новый фильм с ID: {}", film.getId());
         return film;
     }
 
     @Override
     public Film update(Film film) {
         update(UPDATE_QUERY, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId(), film.getId());
-        log.trace("Обновлен фильм с ID: {}", film.getId());
+        log.info("Обновлен фильм с ID: {}", film.getId());
         return film;
     }
 
     @Override
     public void deleteAll() {
         removeAll(DELETE_ALL_QUERY);
-        log.trace("Удалены все фильмы");
+        log.info("Удалены все фильмы");
     }
 
     @Override
@@ -152,20 +142,8 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
 
         Object[] params = buildParamsArray(genreId, year, count);
 
-        log.trace("Запрос на популярные фильмы: {}", sql);
+        log.info("Запрос на популярные фильмы: {}", sql);
         List<Film> films = findMany(sql.toString(), params);
-
-
-        Map<Long, LinkedHashSet<Genre>> genres = getFilmsGenres(films);
-        Map<Long, LinkedHashSet<Director>> directors = getFilmsDirectors(films);
-        for (Film film : films) {
-            if (genres.containsKey(film.getId())) {
-                film.setGenres(new LinkedHashSet<>(genres.get(film.getId())));
-            }
-            if (directors.containsKey(film.getId())) {
-                film.setDirectors(new LinkedHashSet<>(directors.get(film.getId())));
-            }
-        }
         return films;
     }
 
@@ -185,17 +163,6 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     public List<Film> findFilmsByDirectorId(long directorId, String sortedBy) {
         List<Film> directorFilms = findMany(FIND_BY_DIRECTOR_ID_QUERY, directorId);
 
-        Map<Long, LinkedHashSet<Genre>> genres = getAllFilmGenres();
-        Map<Long, LinkedHashSet<Director>> directors = getAllFilmDirectors();
-        for (Film film : directorFilms) {
-            if (genres.containsKey(film.getId())) {
-                film.setGenres(new LinkedHashSet<>(genres.get(film.getId())));
-            }
-            if (directors.containsKey(film.getId())) {
-                film.setDirectors(new LinkedHashSet<>(directors.get(film.getId())));
-            }
-        }
-
         if (sortedBy.equals("year")) {
             return directorFilms.stream().sorted(Comparator.comparing(Film::getReleaseDate)).toList();
         } else {
@@ -206,18 +173,6 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     @Override
     public List<Film> findCommonFilms(long userId, long friendId) {
         List<Film> films = findMany(FIND_COMMON_FILMS, userId, friendId);
-
-        Map<Long, LinkedHashSet<Genre>> genres = getFilmsGenres(films);
-        Map<Long, LinkedHashSet<Director>> directors = getFilmsDirectors(films);
-
-        for (Film film : films) {
-            if (genres.containsKey(film.getId())) {
-                film.setGenres(new LinkedHashSet<>(genres.get(film.getId())));
-            }
-            if (directors.containsKey(film.getId())) {
-                film.setDirectors(new LinkedHashSet<>(directors.get(film.getId())));
-            }
-        }
         return films;
     }
 
@@ -261,18 +216,6 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         } else {
             throw new WrongRequestException("Указано неверное значение критерия поиска (by) для поиска фильма." +
                     " Значение переданного критерия поиска (by) = " + by);
-        }
-
-        Map<Long, LinkedHashSet<Genre>> genres = getFilmsGenres(films);
-        Map<Long, LinkedHashSet<Director>> directors = getFilmsDirectors(films);
-
-        for (Film film : films) {
-            if (genres.containsKey(film.getId())) {
-                film.setGenres(new LinkedHashSet<>(genres.get(film.getId())));
-            }
-            if (directors.containsKey(film.getId())) {
-                film.setDirectors(new LinkedHashSet<>(directors.get(film.getId())));
-            }
         }
         return films.stream().sorted(Comparator.comparing(Film::getCountLikes, Comparator.reverseOrder())).toList();
     }
@@ -319,48 +262,12 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     }
 
     /**
-     * Метод для выборки всех жанров всех фильмов
-     *
-     * @return - HashSet, ключ- ID фильма, значение - список жанров в виде объектов
-     */
-    private Map<Long, LinkedHashSet<Genre>> getAllFilmGenres() {
-        Map<Long, LinkedHashSet<Genre>> res = new HashMap<>();
-        return jdbc.query(FIND_ALL_FILM_GENRES_QUERY, (ResultSet rs) -> {
-            while (rs.next()) {
-                Long filmId = rs.getLong("film_id");
-                Long genreId = rs.getLong("genre_id");
-                String genreName = rs.getString("genre_name");
-                res.computeIfAbsent(filmId, k -> new LinkedHashSet<>()).add(new Genre(genreId, genreName));
-            }
-            return res;
-        });
-    }
-
-    /**
-     * Метод для выборки всех режиссёров всех фильмов
-     *
-     * @return - HashSet, ключ- ID фильма, значение - список режиссёров в виде объектов
-     */
-    private Map<Long, LinkedHashSet<Director>> getAllFilmDirectors() {
-        Map<Long, LinkedHashSet<Director>> res = new HashMap<>();
-        return jdbc.query(FIND_ALL_FILM_DIRECTORS_QUERY, (ResultSet rs) -> {
-            while (rs.next()) {
-                Long filmId = rs.getLong("film_id");
-                Long directorId = rs.getLong("director_id");
-                String directorName = rs.getString("director_name");
-                res.computeIfAbsent(filmId, k -> new LinkedHashSet<>()).add(new Director(directorId, directorName));
-            }
-            return res;
-        });
-    }
-
-    /**
      * Метод для выборки жанров фильмов по списку фильмов
      *
      * @param films - список фильмов для выборки
      * @return - HashSet, ключ - ID фильма, значение - список жанров в виде объектов
      */
-    private Map<Long, LinkedHashSet<Genre>> getFilmsGenres(List<Film> films) {
+    public Map<Long, LinkedHashSet<Genre>> getFilmsGenres(List<Film> films) {
         Long[] filmIds = films.stream().map(Film::getId).toArray(Long[]::new);
         String inSql = String.join(",", Collections.nCopies(filmIds.length, "?"));
         Map<Long, LinkedHashSet<Genre>> res = new HashMap<>();
@@ -383,7 +290,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
      * @param films - список фильмов для выборки
      * @return - HashSet, ключ - ID фильма, значение - список режиссёров в виде объектов
      */
-    private Map<Long, LinkedHashSet<Director>> getFilmsDirectors(List<Film> films) {
+    public Map<Long, LinkedHashSet<Director>> getFilmsDirectors(List<Film> films) {
         Long[] filmIds = films.stream().map(Film::getId).toArray(Long[]::new);
         String inSql = String.join(",", Collections.nCopies(filmIds.length, "?"));
         Map<Long, LinkedHashSet<Director>> res = new HashMap<>();
@@ -405,6 +312,42 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         if (!removeOne(DELETE_BY_ID_QUERY, id)) {
             throw new NotFoundException("Фильм с ID " + id + " не найден.");
         }
-        log.trace("Фильм с ID: {} успешно удалён", id);
+        log.info("Фильм с ID: {} успешно удалён", id);
+    }
+
+    /**
+     * Метод для выборки всех жанров всех фильмов
+     *
+     * @return - HashSet, ключ- ID фильма, значение - список жанров в виде объектов
+     */
+    public Map<Long, LinkedHashSet<Genre>> getAllFilmGenres() {
+        Map<Long, LinkedHashSet<Genre>> res = new HashMap<>();
+        return jdbc.query(FIND_ALL_FILM_GENRES_QUERY, (ResultSet rs) -> {
+            while (rs.next()) {
+                Long filmId = rs.getLong("film_id");
+                Long genreId = rs.getLong("genre_id");
+                String genreName = rs.getString("genre_name");
+                res.computeIfAbsent(filmId, k -> new LinkedHashSet<>()).add(new Genre(genreId, genreName));
+            }
+            return res;
+        });
+    }
+
+    /**
+     * Метод для выборки всех режиссёров всех фильмов
+     *
+     * @return - HashSet, ключ- ID фильма, значение - список режиссёров в виде объектов
+     */
+    public Map<Long, LinkedHashSet<Director>> getAllFilmDirectors() {
+        Map<Long, LinkedHashSet<Director>> res = new HashMap<>();
+        return jdbc.query(FIND_ALL_FILM_DIRECTORS_QUERY, (ResultSet rs) -> {
+            while (rs.next()) {
+                Long filmId = rs.getLong("film_id");
+                Long directorId = rs.getLong("director_id");
+                String directorName = rs.getString("director_name");
+                res.computeIfAbsent(filmId, k -> new LinkedHashSet<>()).add(new Director(directorId, directorName));
+            }
+            return res;
+        });
     }
 }
