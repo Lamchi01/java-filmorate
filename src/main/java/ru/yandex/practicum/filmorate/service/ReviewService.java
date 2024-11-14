@@ -39,7 +39,7 @@ public class ReviewService {
     public List<Review> findByFilmId(Long id, Long count) {
         List<Review> reviews = reviewStorage.findByFilmId(id, count);
         log.info("Обработан запрос на получение отзывов фильма с ID {}, количество отзывов {}", id, count);
-        return  reviews;
+        return reviews;
     }
 
     public void create(Review review) {
@@ -80,7 +80,7 @@ public class ReviewService {
         User user = userStorage.findById(userId);
         reviewStorage.likeDislikeReview(review, user, isLike);
         reviewStorage.updateReviewUseful(review);
-        log.info("Поставлен {} отзыву с ID {} от пользователя с ID {}", isLike ? "лайк": "дизлайк", reviewId, userId);
+        log.info("Поставлен {} отзыву с ID {} от пользователя с ID {}", isLike ? "лайк" : "дизлайк", reviewId, userId);
     }
 
     public void deleteLikeDislikeReview(Long reviewId, Long userId, boolean isLike) {
@@ -88,6 +88,6 @@ public class ReviewService {
         User user = userStorage.findById(userId);
         reviewStorage.deleteLikeDislikeReview(review, user, isLike);
         reviewStorage.updateReviewUseful(review);
-        log.info("Удален {} у отзыва с ID {} от пользователя с ID {}", isLike ? "лайк": "дизлайк", reviewId, userId);
+        log.info("Удален {} у отзыва с ID {} от пользователя с ID {}", isLike ? "лайк" : "дизлайк", reviewId, userId);
     }
 }

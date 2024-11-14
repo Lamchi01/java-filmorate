@@ -23,7 +23,7 @@ public class Event {
     @NotNull
     private Long entityId;
 
-    public enum EventType { LIKE, REVIEW, FRIEND }
+    public enum EventType {LIKE, REVIEW, FRIEND}
 
-    public enum Operation { REMOVE, ADD, UPDATE }
+    public enum Operation {REMOVE, ADD, UPDATE}
 }
