@@ -64,9 +64,12 @@ public class LikeDbStorageTest {
         likeStorage.likeFilm(film3, user1);
         likeStorage.likeFilm(film3, user2);
         likeStorage.likeFilm(film3, user3);
+        likeStorage.updateCountLikes(film3);
         likeStorage.likeFilm(film2, user1);
         likeStorage.likeFilm(film2, user2);
+        likeStorage.updateCountLikes(film2);
         likeStorage.likeFilm(film1, user1);
+        likeStorage.updateCountLikes(film1);
 
         assertEquals(List.of(film3, film2, film1), filmStorage.getPopularFilms(3, null, null));
 
@@ -121,9 +124,12 @@ public class LikeDbStorageTest {
         likeStorage.likeFilm(film3, user1);
         likeStorage.likeFilm(film3, user2);
         likeStorage.likeFilm(film3, user3);
+        likeStorage.updateCountLikes(film3);
         likeStorage.likeFilm(film2, user1);
         likeStorage.likeFilm(film2, user2);
+        likeStorage.updateCountLikes(film2);
         likeStorage.likeFilm(film1, user1);
+        likeStorage.updateCountLikes(film1);
 
         // количество лайков должно совпадать с выборкой из БД
         assertEquals(film3.getCountLikes(), likeStorage.getLikes(film3));
@@ -132,6 +138,7 @@ public class LikeDbStorageTest {
 
         likeStorage.deleteLike(film3, user1);
         likeStorage.deleteLike(film3, user2);
+        likeStorage.updateCountLikes(film3);
         assertEquals(1L, film3.getCountLikes());
         assertEquals(film3.getCountLikes(), likeStorage.getLikes(film3));
     }
